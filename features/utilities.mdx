@@ -1,0 +1,436 @@
+---
+title: Utility features
+description: Essential bot utilities including ping check, uptime, avatar display, and message echoing
+---
+
+Yato includes several utility commands that provide useful information and basic functions for server members and administrators.
+
+## Overview
+
+Utility commands cover basic bot operations, user information, and helpful tools for everyday Discord use.
+
+<CardGroup cols={2}>
+  <Card title="Ping" icon="signal" href="#ping">
+    Check bot latency and API response time
+  </Card>
+  <Card title="Uptime" icon="clock" href="#uptime">
+    See how long the bot has been running
+  </Card>
+  <Card title="Avatar" icon="image" href="#avatar">
+    Display user avatars in high resolution
+  </Card>
+  <Card title="Say" icon="comment" href="#say">
+    Make the bot repeat your message
+  </Card>
+</CardGroup>
+
+## Ping
+
+Check Yato's connection latency to Discord's API. This helps determine if the bot is responding quickly or experiencing delays.
+
+### Usage
+
+```
+/ping
+```
+
+### Parameters
+
+None - this command takes no parameters.
+
+### Example
+
+```
+/ping
+```
+
+### Response
+
+Yato displays:
+- A playful random message
+- API latency in milliseconds
+
+**Example response:**
+```
+🏓 Is this really my ping?
+
+API Latency: 42ms
+```
+
+**Possible response messages:**
+- "Is this really my ping?"
+- "Is this okay? i can't look!"
+- "I hope it isn't bad!"
+
+<Info>
+  Lower latency means faster response times. Typical values:
+  - **Excellent**: < 100ms
+  - **Good**: 100-200ms
+  - **Fair**: 200-400ms
+  - **Poor**: > 400ms
+</Info>
+
+### What the numbers mean
+
+**API Latency** measures the round-trip time between Yato and Discord's servers. This affects:
+- How quickly commands are acknowledged
+- Response time for messages
+- Overall bot responsiveness
+
+High latency can be caused by:
+- Discord API issues
+- Bot hosting location
+- Network congestion
+- Server load
+
+## Uptime
+
+Check how long Yato has been running since the last restart.
+
+### Usage
+
+```
+/uptime
+```
+
+### Parameters
+
+None - this command takes no parameters.
+
+### Example
+
+```
+/uptime
+```
+
+### Response
+
+**Example responses:**
+```
+⏲️ Uptime
+
+2 days 14 hours 32 minutes 18 seconds
+```
+
+```
+⏲️ Uptime
+
+5 hours 23 minutes 47 seconds
+```
+
+```
+⏲️ Uptime
+
+42 minutes 15 seconds
+```
+
+<Note>
+  Uptime resets to zero whenever the bot restarts for updates, maintenance, or technical issues.
+</Note>
+
+### Why uptime matters
+
+Uptime indicates:
+- **Reliability**: Longer uptime suggests stable hosting
+- **Recent updates**: Short uptime may indicate a recent bot update
+- **Service continuity**: Helps diagnose if the bot recently restarted
+
+### Common uptime scenarios
+
+<Tabs>
+  <Tab title="Long uptime">
+    **Days or weeks**
+    
+    Indicates:
+    - Stable operation
+    - No recent updates
+    - Good hosting reliability
+  </Tab>
+  <Tab title="Medium uptime">
+    **Hours**
+    
+    Indicates:
+    - Recent restart
+    - Possible update deployment
+    - Normal maintenance cycle
+  </Tab>
+  <Tab title="Short uptime">
+    **Minutes**
+    
+    Indicates:
+    - Just started
+    - Recent crash or restart
+    - Emergency fix deployed
+    - Testing or development
+  </Tab>
+</Tabs>
+
+## Avatar
+
+Display a user's Discord avatar in high resolution. Perfect for viewing profile pictures in detail or sharing avatars.
+
+### Usage
+
+```
+/avatar [user:<user>]
+```
+
+### Parameters
+
+- `user` (optional) - Select a user from the dropdown menu
+  - If omitted: Shows your own avatar
+  - If specified: Shows the selected user's avatar
+
+### Examples
+
+<Tabs>
+  <Tab title="Your avatar">
+    ```
+    /avatar
+    ```
+    
+    Displays your own avatar in high resolution (1024x1024).
+  </Tab>
+  <Tab title="Another user's avatar">
+    ```
+    /avatar user:@friend
+    ```
+    
+    Displays the selected user's avatar in high resolution.
+  </Tab>
+</Tabs>
+
+### Response format
+
+Yato displays:
+- **Description**: "Avatar of @User"
+- **Image**: User's avatar at 1024x1024 resolution
+- **Format**: PNG (or GIF for animated avatars)
+
+### Avatar features
+
+**High resolution**: Images are fetched at 1024x1024, the maximum size Discord provides.
+
+**Dynamic format**: 
+- Static avatars → PNG format
+- Animated avatars → GIF format (preserves animation)
+
+**Direct download**: Right-click the image to save the avatar to your device.
+
+<Info>
+  Animated avatars (GIFs) are a Discord Nitro feature. Free users have static avatars only.
+</Info>
+
+### Use cases
+
+- **Save avatars**: Download profile pictures you like
+- **Share avatars**: Show someone's cool avatar to the chat
+- **Verify users**: Check profile pictures when managing members
+- **Art reference**: Use avatars as reference for drawings or edits
+- **Server branding**: Review member avatars for themed servers
+
+## Say
+
+Make Yato repeat a message you provide. The bot sends your message to the channel while you receive an ephemeral confirmation.
+
+### Usage
+
+```
+/say message:<text>
+```
+
+### Parameters
+
+- `message` (required) - The text you want the bot to send
+
+### Examples
+
+```
+/say message:Welcome to our server!
+```
+
+```
+/say message:Event starts in 10 minutes!
+```
+
+```
+/say message:Don't forget to check the rules!
+```
+
+### How it works
+
+1. You run `/say message:Hello everyone!`
+2. Yato sends "Hello everyone!" to the channel (everyone can see)
+3. You receive an ephemeral message: "Echo Message: Hello everyone!" (only you can see)
+
+<Tabs>
+  <Tab title="What users see">
+    The bot posts your message directly to the channel:
+    
+    ```
+    Hello everyone!
+    ```
+    
+    It appears as a regular message from Yato.
+  </Tab>
+  <Tab title="What you see">
+    You also receive a private confirmation:
+    
+    ```
+    Echo Message: Hello everyone!
+    ```
+    
+    This message is ephemeral (only visible to you).
+  </Tab>
+</Tabs>
+
+### Use cases
+
+**For administrators:**
+- Make announcements appear from the bot
+- Create formatted server messages
+- Post reminders or alerts
+- Separate official announcements from personal messages
+
+**For moderators:**
+- Issue warnings or notices
+- Make rule reminders
+- Post event information
+
+**For regular users:**
+- Fun interactions and jokes
+- Roleplay scenarios
+- Anonymous suggestions (if configured)
+
+<Warning>
+  **Abuse potential**: This command can be misused for:
+  - Impersonation
+  - Spreading misinformation  
+  - Harassment
+  
+  Consider restricting this command to trusted roles in your server settings.
+</Warning>
+
+### Server configuration
+
+Server administrators should consider:
+
+**Permission restrictions:**
+- Limit `/say` to specific roles (Moderators, Admins)
+- Use Discord's built-in slash command permissions
+- Monitor usage for abuse
+
+**Channel restrictions:**
+- Disable in public channels
+- Allow only in bot-commands or admin channels
+- Create logs of say command usage
+
+**Alternative approaches:**
+- Use webhooks for more advanced message posting
+- Consider dedicated announcement bots
+- Use Discord's native announcement channels
+
+### Markdown support
+
+The `/say` command supports Discord markdown formatting:
+
+```
+/say message:**Bold text** *italic text* __underline__
+```
+
+```
+/say message:Check out this link: https://discord.com
+```
+
+```
+/say message:```
+Code block
+```
+```
+
+<Info>
+  Discord's standard markdown formatting works in say messages, including bold, italic, code blocks, links, and more.
+</Info>
+
+## Best practices
+
+### Using ping
+
+- Check ping if commands seem slow
+- Compare with your own Discord latency
+- Report consistently high ping to bot administrators
+- Use during troubleshooting
+
+### Using uptime
+
+- Don't confuse short uptime with unreliability (could be planned updates)
+- Check uptime after service disruptions
+- Compare uptime with status pages if available
+
+### Using avatar
+
+- Respect privacy when sharing others' avatars
+- Don't reupload avatars claiming they're your art
+- Credit users if you use their avatar art
+
+### Using say
+
+- Don't impersonate users or spread false information
+- Mark clearly if posting sensitive information
+- Use for constructive purposes (announcements, events)
+- Consider who has access to this command
+
+## Troubleshooting
+
+### High ping values
+
+**Issue**: Ping shows >500ms consistently
+
+**Solutions:**
+- Check Discord's status page for API issues
+- Verify your own internet connection
+- Contact bot administrators if persistent
+- May be temporary server load
+
+### Avatar not displaying
+
+**Issue**: Avatar command returns an error or broken image
+
+**Causes:**
+- User has no custom avatar (using Discord default)
+- Temporary Discord CDN issue
+- Network problems
+
+**Solutions:**
+- Try again in a few moments
+- Check if the user has an avatar set
+- Verify bot permissions
+
+### Say command restricted
+
+**Issue**: "You don't have permission to use this command"
+
+**Cause**: Server administrators have restricted the command to specific roles.
+
+**Solution**: Ask a moderator or admin if you need access for legitimate purposes.
+
+## Privacy and permissions
+
+These utility commands require no special permissions and are generally safe for all users, with the exception of `/say` which server admins should consider restricting.
+
+**Data collected:**
+- None of these commands store personal data
+- No logging of avatar views
+- No tracking of ping checks
+- Say command may be logged by server admins for moderation
+
+## Summary
+
+Utility commands provide essential functions:
+
+- **Ping**: Monitor bot responsiveness
+- **Uptime**: Check bot stability
+- **Avatar**: View profile pictures in high quality  
+- **Say**: Post messages through the bot
+
+These tools enhance the Discord experience and provide useful information for both users and administrators.

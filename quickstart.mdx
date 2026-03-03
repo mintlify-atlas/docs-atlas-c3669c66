@@ -1,80 +1,192 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get Yato Discord Bot running in minutes
 ---
 
-## Get started in three steps
+<Warning>
+  **Archived project**: This bot may require updates to work with the current Discord API. Node.js 18+ and discord.js v14+ migration is recommended for production use.
+</Warning>
 
-Get your documentation site running locally and make your first customization.
+This guide will help you get Yato up and running quickly. Follow these steps to go from cloning to a live bot in your server.
 
-### Step 1: Set up your local environment
+## Prerequisites
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+Before you begin, ensure you have:
+
+- Node.js v14–16 (v18+ recommended for modern use)
+- npm or yarn package manager
+- A Discord Application with a bot token ([Create one here](https://discord.com/developers/applications))
+- (Optional) MongoDB instance for persistence features
+
+## Quick setup
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone Yato to your local machine:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    git clone https://github.com/qonTesq/Yato.git
+    cd Yato
+    ```
+  </Step>
+  
+  <Step title="Install dependencies">
+    Install all required packages:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    ```bash
+    npm install
+    ```
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    This will install discord.js, gcommands, mongoose, canvas, and all other dependencies listed in `package.json`.
+  </Step>
+  
+  <Step title="Configure environment variables">
+    Create a `.env` file in the project root with your bot credentials:
+    
+    ```bash .env
+    TOKEN=your_discord_bot_token
+    CLIENT_ID=your_bot_application_client_id
+    MONGO_URI=your_mongo_connection_string_optional
+    ```
+    
+    <Tip>
+      Get your bot token from the [Discord Developer Portal](https://discord.com/developers/applications) under your application's Bot settings.
+    </Tip>
+    
+    <Warning>
+      Never commit your `.env` file to version control. It contains sensitive credentials.
+    </Warning>
+  </Step>
+  
+  <Step title="Enable Discord intents">
+    In the Discord Developer Portal, enable the required Gateway Intents:
+    
+    - Server Members Intent (for member tracking)
+    - Message Content Intent (if using message-based commands)
+    - Presence Intent (if needed for status features)
+    
+    Navigate to: **Your Application → Bot → Privileged Gateway Intents**
+  </Step>
+  
+  <Step title="Run the bot">
+    Start Yato with one of these commands:
+    
+    <CodeGroup>
+    ```bash Development (with nodemon)
+    npm run dev
+    ```
+    
+    ```bash Production
+    node src/index.js
+    ```
+    </CodeGroup>
+    
+    You should see output indicating successful login:
+    
+    ```
+    ➤ Logged in as Yato#1234 (123456789012345678)
+    ✔ Connected to MongoDB
+    ```
+  </Step>
+  
+  <Step title="Invite the bot to your server">
+    Generate an invite link in the Discord Developer Portal:
+    
+    1. Go to **Your Application → OAuth2 → URL Generator**
+    2. Select scopes: `bot` and `applications.commands`
+    3. Select bot permissions based on features you want to use
+    4. Copy the generated URL and open it in your browser
+    5. Select your server and authorize
+  </Step>
+  
+  <Step title="Test your bot">
+    In your Discord server, try these commands:
+    
+    ```
+    /help
+    /serverinfo
+    /userinfo
+    ```
+    
+    Or mention the bot:
+    
+    ```
+    @Yato help
+    ```
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Project structure
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Here's what you'll find in the Yato directory:
 
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+```
+Yato/
+├── src/
+│   ├── index.js              # Bot startup and initialization
+│   ├── commands/             # Command categories
+│   │   ├── games/           # Game commands
+│   │   ├── images/          # Image generation
+│   │   ├── information/     # Info commands (help, serverinfo)
+│   │   ├── memes/           # Meme commands
+│   │   ├── misc/            # Miscellaneous commands
+│   │   ├── moderation/      # Moderation tools
+│   │   ├── utilities/       # Utility commands
+│   │   └── weeb/            # Anime/manga commands
+│   ├── config/              # Configuration files
+│   ├── models/              # Mongoose database models
+│   └── structures/          # Helper classes and utilities
+├── fonts/                   # Custom fonts for Canvas
+├── package.json
+├── .env                     # Your environment variables (create this)
+└── README.md
+```
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Detailed installation" icon="book" href="/installation">
+    Learn about system requirements and advanced setup options
+  </Card>
+  
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Customize bot behavior and configure optional features
+  </Card>
+  
+  <Card title="Commands" icon="list" href="/commands/overview">
+    Explore all available commands and their usage
+  </Card>
+  
+  <Card title="Development" icon="code" href="/development/architecture">
+    Learn how to add custom commands and extend functionality
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Bot doesn't respond to commands">
+    - Verify the bot is online in your server member list
+    - Check that you've enabled the required Gateway Intents
+    - Ensure the bot has permission to read messages and send messages
+    - Wait a few minutes for slash commands to register globally
+  </Accordion>
+  
+  <Accordion title="MongoDB connection failed">
+    - Verify your `MONGO_URI` is correct in `.env`
+    - Check that your MongoDB instance is running and accessible
+    - The bot can run without MongoDB, but persistence features won't work
+  </Accordion>
+  
+  <Accordion title="Canvas/image commands not working">
+    - Ensure the `canvas` package installed correctly
+    - On Linux, you may need additional system dependencies (libcairo, libjpeg, etc.)
+    - Check that custom fonts are in the `/fonts` directory
+  </Accordion>
+  
+  <Accordion title="Dependencies have vulnerabilities">
+    - This is expected for an archived project with outdated packages
+    - Run `npm audit fix` at your own risk
+    - Consider upgrading to discord.js v14+ for modern security patches
+  </Accordion>
+</AccordionGroup>

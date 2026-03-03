@@ -1,0 +1,404 @@
+---
+title: Adding commands
+description: How to create new commands for Yato using the gcommands framework
+---
+
+Yato uses the gcommands framework to handle commands. Commands are automatically loaded from the `src/commands/` directory and work as both slash commands and mention-based commands.
+
+## Command module structure
+
+All commands follow a standard module.exports pattern. There are two ways to define commands:
+
+<Tabs>
+  <Tab title="Simple export">
+    The most common pattern used in Yato:
+    
+    ```js src/commands/utilities/ping.js
+    const { MessageEmbed } = require('discord.js');
+    const colors = require('../../config/colors.json');
+    
+    module.exports = {
+      name: 'ping',
+      slash: true,
+      description: 'Checks the bot ping!',
+      run: ({ client, respond }) => {
+        const choices = [
+          'Is this really my ping?', 
+          'Is this okay? i can\'t look!', 
+          'I hope it isn\'t bad!'
+        ];
+        const response = choices[Math.floor(Math.random() * choices.length)];
+    
+        const embed = new MessageEmbed()
+          .setTitle(`:ping_pong: ${response}`)
+          .setColor(colors.default)
+          .addField('API Latency', `**${Math.round(client.ws.ping)}ms**`);
+    
+        respond(embed);
+      }
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Class-based">
+    For more complex commands:
+    
+    ```js src/commands/misc/activities.js
+    const { Command } = require('gcommands');
+    const { MessageEmbed } = require('discord.js');
+    
+    module.exports = class Activities extends Command {
+      constructor(...args) {
+        super(...args, {
+          name: 'activities',
+          slash: true,
+          description: 'The all new Discord Activities (BETA)',
+          args: [
+            {
+              name: 'voicechannel',
+              type: '7',
+              description: 'Select Voice Channel',
+              required: true
+            }
+          ],
+          userRequiredPermissions: 'CREATE_INSTANT_INVITE',
+          cooldown: 10
+        });
+      }
+    
+      async run({ client, guild, respond }, arrayArgs, args) {
+        // Command logic here
+      }
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Creating a new command
+
+<Steps>
+  <Step title="Choose a category">
+    Determine which category your command belongs to:
+    
+    - `games/` - Game integrations
+    - `images/` - Image generation and reactions
+    - `information/` - Server and user information
+    - `memes/` - Entertainment and memes
+    - `misc/` - Miscellaneous features
+    - `moderation/` - Moderation tools
+    - `utilities/` - Bot utilities
+    - `weeb/` - Anime and manga features
+  </Step>
+
+  <Step title="Create the command file">
+    Create a new `.js` file in the appropriate category directory:
+    
+    ```bash
+    touch src/commands/utilities/mycommand.js
+    ```
+  </Step>
+
+  <Step title="Define the command structure">
+    Use the standard module.exports pattern with required properties:
+    
+    ```js
+    module.exports = {
+      name: 'mycommand',
+      slash: true,
+      description: 'What this command does',
+      run: ({ client, respond }) => {
+        // Your command logic
+      }
+    };
+    ```
+  </Step>
+
+  <Step title="Restart the bot">
+    Commands are loaded on startup, so restart the bot to register your new command:
+    
+    ```bash
+    npm run dev
+    ```
+  </Step>
+</Steps>
+
+## Command properties
+
+All available properties you can use in command definitions:
+
+### Required properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | string | Command name (lowercase, no spaces) |
+| `description` | string | What the command does |
+| `run` | function | Command execution logic |
+
+### Optional properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `slash` | boolean | Enable as slash command (default: false) |
+| `cooldown` | number | Cooldown in seconds |
+| `guildOnly` | string | Restrict to specific guild ID |
+| `userRequiredPermissions` | string | Required user permissions |
+| `clientRequiredPermissions` | string | Required bot permissions |
+| `minArgs` | number | Minimum argument count |
+| `expectedArgs` | string\|array | Argument definitions |
+
+<Info>
+  Set `slash: true` to enable the command as a slash command. Without this, the command only works with the mention prefix.
+</Info>
+
+## Defining arguments
+
+There are two ways to define command arguments:
+
+<Tabs>
+  <Tab title="String format">
+    Simple string format used in the ban command at `src/commands/moderation/ban.js:13`:
+    
+    ```js
+    module.exports = {
+      name: 'ban',
+      minArgs: 1,
+      expectedArgs: '<user:6:Select the User> [reason:3:Reason for banning?]',
+      run: async ({ guild, respond }, arrayArgs, args) => {
+        const banMember = guild.members.cache.get(args.user);
+        const reason = args.reason || 'No reason provided';
+        // ...
+      }
+    };
+    ```
+    
+    **Format**: `<name:type:description>` or `[name:type:description]`
+    - `<>` = required argument
+    - `[]` = optional argument
+    - Type codes: 3=string, 6=user, 7=channel, etc.
+  </Tab>
+  
+  <Tab title="Object array">
+    Detailed array format used in the hug command at `src/commands/images/hug.js:11`:
+    
+    ```js
+    module.exports = {
+      name: 'hug',
+      expectedArgs: [
+        {
+          name: 'user',
+          description: 'Select a user',
+          type: 6
+        },
+        {
+          name: 'reason',
+          description: 'Enter roleplayable reason',
+          type: 3
+        }
+      ],
+      run: async ({ guild, member, respond }, arrayArgs, args) => {
+        const user = guild.members.cache.get(args.user);
+        const str = `**${member.user.username}** *hugs* ${user}`;
+        // ...
+      }
+    };
+    ```
+  </Tab>
+</Tabs>
+
+### Argument types
+
+Common Discord slash command option types:
+
+| Type | Code | Description |
+|------|------|-------------|
+| String | 3 | Text input |
+| Integer | 4 | Whole number |
+| Boolean | 5 | True/false |
+| User | 6 | User mention |
+| Channel | 7 | Channel mention |
+| Role | 8 | Role mention |
+
+## Run function parameters
+
+The `run` function receives destructured parameters:
+
+```js
+run: async ({ client, guild, channel, member, respond, edit }, arrayArgs, args) => {
+  // client - Discord.js client instance
+  // guild - The guild where command was used
+  // channel - The channel where command was used
+  // member - The member who used the command
+  // respond - Function to send response
+  // edit - Function to edit response
+  // arrayArgs - Arguments as array
+  // args - Arguments as object
+}
+```
+
+### Responding to commands
+
+Use the `respond()` function to send messages:
+
+<CodeGroup>
+```js Simple embed
+const embed = new MessageEmbed()
+  .setColor(colors.default)
+  .setDescription('Hello!');
+  
+respond(embed);
+```
+
+```js Ephemeral message
+respond({
+  content: embed,
+  ephemeral: true
+});
+```
+
+```js Deferred response
+respond({
+  content: 'loading...',
+  thinking: true
+});
+
+// Later, edit the response
+edit({ content: finalEmbed });
+```
+
+```js With components
+const button = new MessageButton()
+  .setStyle('url')
+  .setLabel('Website')
+  .setURL('https://yatobot.netlify.app')
+  .toJSON();
+
+const row = new MessageActionRow()
+  .addComponent(button);
+
+respond({
+  content: embed,
+  components: row
+});
+```
+</CodeGroup>
+
+## Permission checks
+
+Add permission requirements to your command:
+
+```js src/commands/moderation/ban.js
+module.exports = {
+  name: 'ban',
+  userRequiredPermissions: 'BAN_MEMBERS',
+  clientRequiredPermissions: 'BAN_MEMBERS',
+  run: async ({ guild, member, respond }, arrayArgs, args) => {
+    // gcommands automatically checks permissions
+    // This code only runs if both user and bot have BAN_MEMBERS
+  }
+};
+```
+
+Common permissions:
+- `ADMINISTRATOR`
+- `MANAGE_GUILD`
+- `MANAGE_CHANNELS`
+- `KICK_MEMBERS`
+- `BAN_MEMBERS`
+- `MANAGE_MESSAGES`
+- `CREATE_INSTANT_INVITE`
+
+## Using shared utilities
+
+Import shared utilities from the structures folder:
+
+```js
+const utils = require('../../structures/utils');
+const colors = require('../../config/colors.json');
+const emojis = require('../../config/emojis.json');
+
+module.exports = {
+  run: async ({ client, channel, respond }) => {
+    // Use utility functions
+    const embeds = await utils.animeMangaSearch('anime', query, channel);
+    
+    // Use config values
+    const TickYes = client.emojis.cache.get(emojis.TickYes);
+    
+    const embed = new MessageEmbed()
+      .setColor(colors.green)
+      .setDescription(`${TickYes} Success!`);
+  }
+};
+```
+
+## Interactive components
+
+Create commands with buttons and collectors:
+
+```js src/commands/weeb/anime.js
+const { MessageButton, MessageActionRow } = require('gcommands');
+
+module.exports = {
+  run: async ({ member, respond, edit }) => {
+    // Create buttons
+    const nextPage = new MessageButton()
+      .setStyle('gray')
+      .setLabel('Next')
+      .setID('next')
+      .toJSON();
+    
+    const buttonRow = new MessageActionRow()
+      .addComponent(nextPage);
+    
+    const msg = await respond({
+      content: embed,
+      components: buttonRow
+    });
+    
+    // Create collector
+    const filter = (button) => button.clicker.user.id === member.user.id;
+    const collector = msg.createButtonCollector(filter, { 
+      time: 60000 
+    });
+    
+    collector.on('collect', (button) => {
+      button.edit({ content: newEmbed });
+    });
+  }
+};
+```
+
+## Example: Complete command
+
+Here's a complete example combining multiple features:
+
+```js src/commands/utilities/serverinfo.js
+const { MessageEmbed } = require('discord.js');
+const moment = require('moment');
+const colors = require('../../config/colors.json');
+
+module.exports = {
+  name: 'serverinfo',
+  slash: true,
+  description: 'Display information about the server',
+  cooldown: 5,
+  run: ({ guild, respond }) => {
+    const embed = new MessageEmbed()
+      .setTitle(guild.name)
+      .setColor(colors.default)
+      .setThumbnail(guild.iconURL({ dynamic: true }))
+      .addField('Owner', `<@${guild.ownerID}>`, true)
+      .addField('Members', guild.memberCount.toString(), true)
+      .addField('Created', moment(guild.createdAt).format('MMM DD, YYYY'), true)
+      .addField('Channels', guild.channels.cache.size.toString(), true)
+      .addField('Roles', guild.roles.cache.size.toString(), true)
+      .setFooter(`ID: ${guild.id}`);
+    
+    respond(embed);
+  }
+};
+```
+
+<Tip>
+  Check existing commands in `src/commands/` for more examples and patterns used throughout Yato.
+</Tip>

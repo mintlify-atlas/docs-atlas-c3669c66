@@ -1,0 +1,303 @@
+---
+title: Deploy to Heroku
+description: Step-by-step guide to deploying Yato Discord Bot on Heroku
+---
+
+<Warning>
+Heroku discontinued free dynos in November 2022. You'll need a paid Eco Dyno ($5/month) or higher. Additionally, this bot uses discord.js v12 which is outdated.
+</Warning>
+
+## Overview
+
+Heroku is a cloud platform that supports Node.js applications with git-based deployments. Yato includes a `Procfile` for Heroku compatibility.
+
+## Prerequisites
+
+- Heroku account ([sign up](https://signup.heroku.com/))
+- Heroku CLI installed ([download](https://devcenter.heroku.com/articles/heroku-cli))
+- Git installed
+- Discord bot token
+- MongoDB connection string (use MongoDB Atlas free tier)
+
+## Deployment steps
+
+<Steps>
+  <Step title="Install Heroku CLI">
+    Download and install the Heroku CLI, then login:
+    
+    ```bash
+    heroku login
+    ```
+  </Step>
+  
+  <Step title="Clone the repository">
+    Clone the Yato bot repository:
+    
+    ```bash
+    git clone https://github.com/qonTesq/Yato.git
+    cd Yato
+    ```
+  </Step>
+  
+  <Step title="Create Heroku application">
+    Create a new Heroku app with a unique name:
+    
+    ```bash
+    heroku create yato-bot-yourname
+    ```
+    
+    Or let Heroku generate a random name:
+    
+    ```bash
+    heroku create
+    ```
+  </Step>
+  
+  <Step title="Configure environment variables">
+    Set your environment variables using Heroku config vars:
+    
+    ```bash
+    heroku config:set TOKEN=your_discord_bot_token
+    heroku config:set MONGO_URI=your_mongodb_connection_string
+    ```
+    
+    <Info>
+    You can also set config vars through the Heroku Dashboard under Settings > Config Vars.
+    </Info>
+  </Step>
+  
+  <Step title="Deploy to Heroku">
+    Push your code to Heroku:
+    
+    ```bash
+    git push heroku main
+    ```
+    
+    If your default branch is `master`:
+    
+    ```bash
+    git push heroku master
+    ```
+  </Step>
+  
+  <Step title="Scale the worker dyno">
+    The bot uses a worker dyno (defined in `Procfile`). Scale it to 1:
+    
+    ```bash
+    heroku ps:scale worker=1
+    ```
+  </Step>
+  
+  <Step title="Verify deployment">
+    Check the bot logs to ensure it's running:
+    
+    ```bash
+    heroku logs --tail
+    ```
+    
+    You should see:
+    ```
+    ➤ Logged in as YourBotName#1234 (123456789)
+    ✔ Connected to MongoDB
+    ```
+  </Step>
+</Steps>
+
+## Understanding the Procfile
+
+The included `Procfile` defines how Heroku runs the bot:
+
+```text Procfile
+worker: node .
+```
+
+- **worker**: Dyno type (background worker, not web server)
+- **node .**: Runs `node src/index.js` based on `package.json` main field
+
+<Note>
+Worker dynos don't require a port binding like web dynos, making them ideal for Discord bots.
+</Note>
+
+## Managing your Heroku deployment
+
+### View logs
+
+<CodeGroup>
+```bash Tail logs
+heroku logs --tail
+```
+
+```bash Recent logs
+heroku logs --num 100
+```
+
+```bash Filter logs
+heroku logs --source app --tail
+```
+</CodeGroup>
+
+### Restart the bot
+
+```bash
+heroku restart
+```
+
+### Update environment variables
+
+```bash
+heroku config:set VARIABLE_NAME=value
+```
+
+View all config vars:
+
+```bash
+heroku config
+```
+
+### Check dyno status
+
+```bash
+heroku ps
+```
+
+## Setting up MongoDB Atlas
+
+Since Heroku doesn't provide free database hosting:
+
+<Steps>
+  <Step title="Create MongoDB Atlas account">
+    Sign up at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
+  </Step>
+  
+  <Step title="Create a free cluster">
+    Create a free M0 cluster (512MB storage, shared CPU)
+  </Step>
+  
+  <Step title="Configure network access">
+    In Network Access, add `0.0.0.0/0` to allow connections from anywhere (Heroku IPs are dynamic)
+    
+    <Warning>
+    This allows connections from any IP. Secure your database with a strong password.
+    </Warning>
+  </Step>
+  
+  <Step title="Create database user">
+    In Database Access, create a user with read/write permissions
+  </Step>
+  
+  <Step title="Get connection string">
+    Click "Connect" > "Connect your application" and copy the connection string:
+    
+    ```
+    mongodb+srv://username:password@cluster.mongodb.net/yato?retryWrites=true&w=majority
+    ```
+    
+    Replace `<password>` with your database user password.
+  </Step>
+</Steps>
+
+## Updating your bot
+
+When you make changes to the code:
+
+<Steps>
+  <Step title="Commit changes">
+    ```bash
+    git add .
+    git commit -m "Update bot features"
+    ```
+  </Step>
+  
+  <Step title="Push to Heroku">
+    ```bash
+    git push heroku main
+    ```
+    
+    Heroku automatically rebuilds and restarts your bot.
+  </Step>
+  
+  <Step title="Monitor deployment">
+    ```bash
+    heroku logs --tail
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Bot is not coming online
+
+<Steps>
+  <Step title="Check worker dyno">
+    Ensure the worker dyno is running:
+    ```bash
+    heroku ps
+    ```
+    
+    If not, scale it:
+    ```bash
+    heroku ps:scale worker=1
+    ```
+  </Step>
+  
+  <Step title="Verify environment variables">
+    ```bash
+    heroku config
+    ```
+    
+    Ensure `TOKEN` and `MONGO_URI` are set correctly.
+  </Step>
+  
+  <Step title="Check logs for errors">
+    ```bash
+    heroku logs --tail
+    ```
+  </Step>
+</Steps>
+
+### MongoDB connection fails
+
+- Verify connection string format
+- Ensure Network Access allows `0.0.0.0/0`
+- Check database user credentials
+- Test connection locally first
+
+### Commands not registering
+
+- Slash commands may take up to 1 hour to register globally
+- Use `GUILD_ID` environment variable for instant registration in a test server
+- Check bot permissions in Discord Developer Portal
+
+### Dyno exceeds memory quota
+
+Canvas operations can be memory-intensive:
+
+- Upgrade to Eco Dyno or higher ($5+/month)
+- Optimize Canvas usage in welcome cards
+- Clear caches more frequently
+
+## Cost optimization
+
+<Tip>
+Heroku Eco Dynos ($5/month) don't sleep and include 1000 dyno hours, sufficient for one always-on bot.
+</Tip>
+
+| Plan | Cost | Dyno Hours | Best For |
+|------|------|------------|----------|
+| Eco Dyno | $5/month | 1000 hours | Single bot, small servers |
+| Basic Dyno | $7/month | Always-on | Production use |
+| Standard Dynos | $25+/month | Always-on + performance | High-traffic bots |
+
+## Alternative deployment
+
+If Heroku doesn't meet your needs:
+
+- [Docker deployment](/deployment/docker) for any VPS
+- Railway (similar to Heroku with free tier)
+- DigitalOcean App Platform
+
+## Additional resources
+
+- [Heroku Node.js Support](https://devcenter.heroku.com/articles/nodejs-support)
+- [Heroku Config Vars](https://devcenter.heroku.com/articles/config-vars)
+- [MongoDB Atlas Documentation](https://docs.atlas.mongodb.com/)

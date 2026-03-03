@@ -1,0 +1,217 @@
+---
+title: Environment variables
+description: Configure Yato Discord Bot using environment variables in your .env file
+---
+
+Yato uses environment variables to configure the bot's core functionality, including Discord authentication, database connections, and optional features.
+
+## Setting up your .env file
+
+<Steps>
+  <Step title="Create .env file">
+    Create a `.env` file in the root of your project directory (same level as `package.json`).
+    
+    ```bash
+    touch .env
+    ```
+  </Step>
+  
+  <Step title="Add required variables">
+    Add the required environment variables to your `.env` file. See the sections below for details on each variable.
+  </Step>
+  
+  <Step title="Secure your .env file">
+    Ensure your `.env` file is listed in `.gitignore` to prevent committing sensitive tokens to version control.
+    
+    <Warning>
+      Never commit your `.env` file or expose your bot token publicly. If your token is compromised, regenerate it immediately in the Discord Developer Portal.
+    </Warning>
+  </Step>
+</Steps>
+
+## Required environment variables
+
+These variables are essential for the bot to function properly.
+
+<ParamField path="TOKEN" type="string" required>
+  Your Discord bot token from the Discord Developer Portal.
+  
+  This token authenticates your bot with Discord's API and is used in `src/index.js:45` to log in:
+  
+  ```javascript
+  client.login(process.env.TOKEN);
+  ```
+  
+  **How to get it:**
+  1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+  2. Select your application
+  3. Navigate to the "Bot" tab
+  4. Click "Reset Token" or "Copy" to get your token
+</ParamField>
+
+<ParamField path="MONGO_URI" type="string" required>
+  MongoDB connection string for database persistence.
+  
+  The bot connects to MongoDB in `src/index.js:11` using Mongoose:
+  
+  ```javascript
+  await mongoose.connect(process.env.MONGO_URI, { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true 
+  })
+  ```
+  
+  **Format:**
+  ```
+  mongodb://username:password@host:port/database
+  ```
+  
+  Or for MongoDB Atlas:
+  ```
+  mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+  ```
+  
+  <Info>
+    The bot uses MongoDB to store user data (AniList profiles), guild configurations, and other persistent data. See the [MongoDB setup guide](/configuration/mongodb) for detailed instructions.
+  </Info>
+</ParamField>
+
+## Optional environment variables
+
+These variables are optional and enable additional features.
+
+<ParamField path="CLIENT_ID" type="string">
+  Your Discord application's client ID.
+  
+  Used for generating invite links and OAuth2 authorization. While not strictly required for the bot to run, it's useful for:
+  - Generating proper invite URLs
+  - Application command registration
+  - OAuth2 flows
+  
+  **How to get it:**
+  1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+  2. Select your application
+  3. Copy the "Application ID" from the General Information tab
+</ParamField>
+
+<ParamField path="GUILD_ID" type="string">
+  A test guild (server) ID for faster command registration during development.
+  
+  When developing, registering commands to a specific guild is much faster (instant) than registering globally (can take up to 1 hour).
+  
+  **How to get it:**
+  1. Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
+  2. Right-click on your test server
+  3. Click "Copy ID"
+  
+  <Note>
+    Only use this during development. For production, register commands globally by omitting this variable.
+  </Note>
+</ParamField>
+
+<ParamField path="LOG_CHANNEL_ID" type="string">
+  Discord channel ID where the bot will send log messages (joins, leaves, moderation events).
+  
+  If configured, the bot can send automated logs for:
+  - Member joins and leaves
+  - Moderation actions (kicks, bans, mutes)
+  - Other guild events
+</ParamField>
+
+<ParamField path="WELCOME_CHANNEL_ID" type="string">
+  Discord channel ID where the bot will send welcome messages for new members.
+  
+  The bot can generate custom Canvas-based welcome cards with user avatars and server information.
+</ParamField>
+
+## Example .env file
+
+<CodeGroup>
+```bash Development
+# Required
+TOKEN=your_discord_bot_token_here
+MONGO_URI=mongodb://localhost:27017/yato-dev
+
+# Optional - Development
+CLIENT_ID=123456789012345678
+GUILD_ID=987654321098765432
+
+# Optional - Features
+LOG_CHANNEL_ID=111111111111111111
+WELCOME_CHANNEL_ID=222222222222222222
+```
+
+```bash Production
+# Required
+TOKEN=your_discord_bot_token_here
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/yato?retryWrites=true&w=majority
+
+# Optional - Production (no GUILD_ID for global commands)
+CLIENT_ID=123456789012345678
+
+# Optional - Features
+LOG_CHANNEL_ID=111111111111111111
+WELCOME_CHANNEL_ID=222222222222222222
+```
+</CodeGroup>
+
+## Environment variable reference
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| `TOKEN` | string | Yes | Discord bot token for authentication |
+| `MONGO_URI` | string | Yes | MongoDB connection string |
+| `CLIENT_ID` | string | No | Discord application client ID |
+| `GUILD_ID` | string | No | Test guild ID for development |
+| `LOG_CHANNEL_ID` | string | No | Channel ID for bot logs |
+| `WELCOME_CHANNEL_ID` | string | No | Channel ID for welcome messages |
+
+## Security best practices
+
+<Warning>
+  Follow these security guidelines to protect your bot and data:
+</Warning>
+
+- **Never commit `.env`**: Always add `.env` to your `.gitignore` file
+- **Rotate tokens regularly**: If you suspect a token leak, regenerate it immediately
+- **Use environment-specific files**: Maintain separate `.env.development` and `.env.production` files
+- **Limit access**: Only share environment variables with trusted team members
+- **Use secret management**: For production deployments, consider using services like:
+  - GitHub Secrets (for CI/CD)
+  - Heroku Config Vars
+  - Railway Environment Variables
+  - Docker secrets
+  - AWS Secrets Manager
+  - Azure Key Vault
+
+## Loading environment variables
+
+Yato uses the `dotenv` package to load environment variables. This happens automatically at the start of `src/index.js:2`:
+
+```javascript
+require('dotenv').config();
+```
+
+This loads all variables from your `.env` file into `process.env`, making them accessible throughout the application.
+
+## Troubleshooting
+
+### Bot won't start
+
+If the bot fails to start, check:
+
+1. **Missing TOKEN**: Ensure `TOKEN` is set in your `.env` file
+2. **Invalid TOKEN**: Verify the token is correct and hasn't been regenerated
+3. **.env location**: Ensure `.env` is in the project root, not in subdirectories
+4. **Syntax errors**: Check for missing quotes or special characters
+
+### MongoDB connection fails
+
+If MongoDB connection fails:
+
+1. **Check MONGO_URI format**: Ensure the connection string is valid
+2. **Verify credentials**: Double-check username and password
+3. **Network access**: For MongoDB Atlas, add your IP to the IP whitelist
+4. **Database exists**: Ensure the database name in the URI exists or can be created
+
+See the [MongoDB configuration guide](/configuration/mongodb) for detailed troubleshooting.

@@ -1,0 +1,347 @@
+---
+title: Anime and manga lookup
+description: Search and discover anime and manga information with AniList integration
+---
+
+Yato provides comprehensive anime and manga lookup features powered by AniList, the premier anime and manga database. Get detailed information, statistics, and user profiles directly in Discord.
+
+## Overview
+
+The anime and manga features let you search for titles, view detailed information, and check AniList user statistics. All data is fetched in real-time from AniList's API.
+
+<CardGroup cols={2}>
+  <Card title="Anime search" icon="tv" href="#anime-search">
+    Look up detailed anime information
+  </Card>
+  <Card title="Manga search" icon="book" href="#manga-search">
+    Find manga titles and details
+  </Card>
+  <Card title="User profiles" icon="user" href="#anilist-profiles">
+    View AniList user statistics
+  </Card>
+  <Card title="Account linking" icon="link" href="#linking-accounts">
+    Connect your AniList account
+  </Card>
+</CardGroup>
+
+## Anime search
+
+Search for anime titles and get comprehensive information including synopsis, ratings, episode count, and more.
+
+### Usage
+
+```
+/anime search:<title>
+```
+
+### Parameters
+
+- `search` (required) - The anime title you want to search for
+
+### Example
+
+```
+/anime search:Attack on Titan
+```
+
+```
+/anime search:Steins Gate
+```
+
+```
+/anime search:進撃の巨人
+```
+
+<Info>
+  You can search using English titles, romanized titles, or native Japanese titles. AniList's search is flexible and will find matches across all title variations.
+</Info>
+
+### What you get
+
+When you search for an anime, Yato displays:
+
+- **Title** - Primary title and alternative titles
+- **Synopsis** - Plot description
+- **Episode count** - Number of episodes
+- **Status** - Airing status (Finished, Currently Airing, Not Yet Released)
+- **Score** - Average user rating
+- **Format** - TV, Movie, OVA, etc.
+- **Season** - Release season and year
+- **Genres** - List of genres
+- **Studios** - Production studios
+- **Cover image** - Official artwork
+
+### Interactive navigation
+
+If multiple results are found, you can navigate between them using Next/Back buttons:
+
+<Tabs>
+  <Tab title="Single result">
+    When only one match is found, it displays immediately with full details.
+  </Tab>
+  <Tab title="Multiple results">
+    When multiple matches are found:
+    1. The first result displays
+    2. Use the **Next** button to view the next result
+    3. Use the **Back** button to return to previous results
+    4. Buttons remain active for 60 seconds
+  </Tab>
+  <Tab title="No results">
+    If nothing matches your search:
+    > Nothing found on "**your search term**"
+  </Tab>
+</Tabs>
+
+<Warning>
+  The command has a 20-second cooldown to prevent API abuse. Wait before searching again.
+</Warning>
+
+## Manga search
+
+Search for manga titles with the same detailed information as anime search.
+
+### Usage
+
+```
+/manga search:<title>
+```
+
+### Parameters
+
+- `search` (required) - The manga title you want to search for
+
+### Example
+
+```
+/manga search:Berserk
+```
+
+```
+/manga search:One Piece
+```
+
+```
+/manga search:ベルセルク
+```
+
+### What you get
+
+Manga search results include:
+
+- **Title** - Primary and alternative titles
+- **Synopsis** - Story description
+- **Chapter count** - Total chapters
+- **Volume count** - Total volumes
+- **Status** - Publishing status (Finished, Releasing, Not Yet Released)
+- **Score** - Average user rating
+- **Format** - Manga, Light Novel, One-shot, etc.
+- **Start date** - Publication start date
+- **Genres** - List of genres
+- **Cover image** - Official artwork
+
+### Interactive features
+
+Just like anime search, manga search supports:
+- Multiple result navigation with Next/Back buttons
+- 60-second interaction window
+- Real-time data from AniList
+
+<Info>
+  Both anime and manga searches use the same interactive button system. Only the user who ran the command can use the navigation buttons.
+</Info>
+
+## AniList profiles
+
+View detailed statistics from AniList user profiles, including anime and manga watching/reading history, favorites, and more.
+
+### Usage
+
+```
+/al [user:<discord_user>]
+```
+
+```
+/al [username:<anilist_username>]
+```
+
+```
+/al
+```
+
+### Parameters
+
+- `user` (optional) - Select a Discord user who has linked their AniList account
+- `username` (optional) - Enter an AniList username directly
+- No parameters - View your own linked AniList stats
+
+<Warning>
+  Do not use both `user` and `username` parameters together. Choose one method:
+  - Select a Discord user, OR
+  - Enter an AniList username
+</Warning>
+
+### Examples
+
+<Tabs>
+  <Tab title="Your own stats">
+    ```
+    /al
+    ```
+    
+    Displays your AniList statistics (requires linked account).
+  </Tab>
+  <Tab title="Discord user lookup">
+    ```
+    /al user:@friend
+    ```
+    
+    Shows the AniList stats of a Discord user who has linked their account with Yato.
+  </Tab>
+  <Tab title="Direct username lookup">
+    ```
+    /al username:OtakuMaster123
+    ```
+    
+    Looks up any AniList user by their username, even if they're not in your Discord server.
+  </Tab>
+</Tabs>
+
+### Profile statistics
+
+AniList profile displays include:
+
+**Anime statistics:**
+- Episodes watched
+- Days spent watching
+- Mean score
+- Watching count
+- Planned count
+- On hold count
+- Dropped count
+- Repeating count
+- Completed count
+- Total anime in list
+
+**Manga statistics:**
+- Chapters read
+- Volumes read
+- Mean score
+- Reading count
+- Planned count
+- On hold count
+- Dropped count
+- Repeating count
+- Completed count
+- Total manga in list
+
+**Favorites:**
+- Favorite character
+- Favorite anime
+- Favorite manga
+- Favorite studio
+
+**Visual elements:**
+- Profile banner image
+- Profile color (matches user's AniList theme)
+- Direct link to AniList profile
+
+<Note>
+  The embed color automatically matches the user's AniList profile color preference (purple, red, pink, blue, orange, gray, or green).
+</Note>
+
+## Linking accounts
+
+To use `/al` without specifying a username every time, users need to link their AniList account with Yato.
+
+### Link your account
+
+Use the `set` command to link your AniList account:
+
+```
+/set
+```
+
+<Info>
+  The specific syntax for the `set` command may vary. Check `/help set` for detailed instructions on linking your AniList account.
+</Info>
+
+### Benefits of linking
+
+- Quick access to your stats with just `/al`
+- Let server members view your profile via `/al user:@you`
+- Automatic profile updates as you watch/read
+
+### Account not linked errors
+
+If you try to use `/al` without linking your account:
+> You have not linked your account with Yato. Use `set` command to link your account
+
+If you try to view another user's profile and they haven't linked:
+> The user has not linked their account with Yato
+
+## Error handling
+
+### Invalid username (404)
+
+```
+Error fetching the AniList Account!
+The provided username is invalid.
+```
+
+**Solution**: Double-check the spelling of the AniList username.
+
+### Rate limiting (429)
+
+```
+Error fetching the AniList Account!
+We are being rate limited, Please use this command after 5 mins.
+```
+
+**Solution**: Wait 5 minutes before trying again. This protects both Yato and AniList's API.
+
+### Unknown errors
+
+```
+Error fetching the AniList Account!
+An unknown error occurred, if the error still persists after some time then report in Yato's Support Server
+```
+
+**Solution**: Wait a moment and retry. If the issue persists, report it on the support server.
+
+## Cooldowns
+
+To prevent API abuse and ensure fair usage:
+
+- **Anime search**: 20 second cooldown
+- **Manga search**: 20 second cooldown
+- **AniList profiles**: 10 second cooldown
+
+<Warning>
+  Cooldowns are per-user. If you try to use a command before the cooldown expires, you'll need to wait.
+</Warning>
+
+## Best practices
+
+### Search tips
+
+1. **Be specific**: "Attack on Titan Season 2" is better than just "Attack"
+2. **Try variations**: If you don't find what you're looking for, try the Japanese title
+3. **Use common names**: Use the most popular English title for better results
+
+### Using in servers
+
+- Create a dedicated anime/manga channel for searches
+- Encourage members to link their AniList accounts
+- Share interesting finds with the community
+- Use during anime watching events or discussions
+
+## Data source
+
+All anime and manga data comes from **AniList** (https://anilist.co), a comprehensive anime and manga database and social network for anime fans. AniList provides:
+
+- Up-to-date information on thousands of titles
+- User-generated ratings and reviews
+- Seasonal charts and trending titles
+- Extensive metadata and relationships
+
+Yato fetches this data in real-time, ensuring you always get the latest information.

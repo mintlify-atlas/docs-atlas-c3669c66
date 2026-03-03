@@ -1,0 +1,331 @@
+---
+title: Anime commands
+description: Search anime and manga information from AniList and MyAnimeList
+---
+
+Anime commands provide detailed information about anime, manga, and user profiles from popular anime tracking platforms like AniList and MyAnimeList.
+
+<Info>
+  These commands integrate with external APIs and may have cooldowns to prevent rate limiting.
+</Info>
+
+## Anime search
+
+Search for detailed anime information from AniList.
+
+### Syntax
+
+```bash
+/anime search:<anime title>
+```
+
+### Parameters
+
+<ParamField path="search" type="String" required>
+  The anime title to search for
+</ParamField>
+
+### Cooldown
+
+**20 seconds** - This command has a longer cooldown due to API rate limits.
+
+### Example
+
+```bash
+/anime search:Naruto
+/anime search:Attack on Titan
+/anime search:Demon Slayer
+```
+
+### Features
+
+- Interactive pagination with "Next" and "Back" buttons
+- Displays multiple results if available
+- Shows detailed anime information including:
+  - Title and synopsis
+  - Episode count
+  - Rating and genres
+  - Release information
+  - Cover image
+
+<Note>
+  The command will show "loading..." while fetching results. Use the Next/Back buttons to browse through multiple results for 60 seconds.
+</Note>
+
+---
+
+## AniList profile
+
+Retrieve AniList statistics for yourself or another user.
+
+### Syntax
+
+```bash
+/al [user:<@user>]
+/al [username:<anilist_username>]
+/al
+```
+
+### Parameters
+
+<ParamField path="user" type="User">
+  Discord user who has linked their AniList account with Yato
+</ParamField>
+
+<ParamField path="username" type="String">
+  Direct AniList username to look up
+</ParamField>
+
+### Cooldown
+
+**10 seconds**
+
+### Examples
+
+<CodeGroup>
+```bash Your own stats
+/al
+```
+
+```bash Another Discord user's stats
+/al user:@friend
+```
+
+```bash Direct username lookup
+/al username:ZestY
+```
+</CodeGroup>
+
+### Displayed information
+
+<Tabs>
+  <Tab title="Anime statistics">
+    - Episodes watched
+    - Days spent watching
+    - Mean score
+    - Watching, Planned, On Hold, Dropped, Repeating, Completed counts
+    - Total anime entries
+  </Tab>
+
+  <Tab title="Manga statistics">
+    - Chapters read
+    - Volumes read
+    - Mean score
+    - Reading, Planned, On Hold, Dropped, Repeating, Completed counts
+    - Total manga entries
+  </Tab>
+
+  <Tab title="Favorites">
+    - Favorite character (with link)
+    - Favorite anime (with link)
+    - Favorite manga (with link)
+    - Favorite studio (with link)
+  </Tab>
+</Tabs>
+
+### Notes
+
+<Warning>
+  - You cannot use both `user:` and `username:` parameters together
+  - Users must link their AniList account with Yato using the `set` command before their stats can be retrieved via Discord user selection
+  - If viewing your own stats without linking, you'll be prompted to use the `set` command
+</Warning>
+
+### Error handling
+
+- **404 Error**: Invalid username provided
+- **429 Error**: Rate limited (wait 5 minutes)
+- **Profile not linked**: User hasn't linked their account with Yato
+
+---
+
+## MyAnimeList profile
+
+Retrieve MyAnimeList statistics for yourself or another user.
+
+### Syntax
+
+```bash
+/mal [user:<@user>]
+/mal [username:<mal_username>]
+/mal
+```
+
+### Parameters
+
+<ParamField path="user" type="User">
+  Discord user who has linked their MyAnimeList account with Yato
+</ParamField>
+
+<ParamField path="username" type="String">
+  Direct MyAnimeList username to look up
+</ParamField>
+
+### Cooldown
+
+**10 seconds**
+
+### Examples
+
+<CodeGroup>
+```bash Your own stats
+/mal
+```
+
+```bash Another Discord user's stats
+/mal user:@friend
+```
+
+```bash Direct username lookup
+/mal username:YourMALUsername
+```
+</CodeGroup>
+
+### Displayed information
+
+<Tabs>
+  <Tab title="Anime statistics">
+    - Episodes watched
+    - Days spent watching
+    - Mean score
+    - Watching, Plan to Watch, On Hold, Dropped, Completed counts
+    - Total anime entries
+  </Tab>
+
+  <Tab title="Manga statistics">
+    - Chapters read
+    - Days spent reading
+    - Mean score
+    - Reading, Plan to Read, On Hold, Dropped, Completed counts
+    - Total manga entries
+  </Tab>
+
+  <Tab title="Favorites">
+    - Favorite character (with link)
+    - Favorite anime (with link)
+    - Favorite manga (with link)
+  </Tab>
+</Tabs>
+
+### Notes
+
+<Warning>
+  - You cannot use both `user:` and `username:` parameters together
+  - Users must link their MyAnimeList account with Yato before their stats can be retrieved via Discord user selection
+  - If viewing your own stats without linking, you'll be prompted to use the `set` command
+</Warning>
+
+### Error handling
+
+- **404 Error**: Invalid username
+- **500 Error**: Internal server error (report if persistent)
+- **503 Error**: MyAnimeList is down or unavailable
+- **Profile not linked**: User hasn't linked their account with Yato
+
+---
+
+## Meme commands
+
+Get quality anime memes from Reddit.
+
+### Animeme
+
+Get anime-related memes from anime subreddits.
+
+#### Syntax
+
+```bash
+/animeme
+```
+
+#### Cooldown
+
+**10 seconds**
+
+#### Sources
+
+Randomly fetches from:
+- r/Animemes
+- r/animememes
+- r/goodanimemes
+
+#### Example
+
+```bash
+/animeme
+```
+
+### Regular meme
+
+Get general memes from popular subreddits.
+
+#### Syntax
+
+```bash
+/meme
+```
+
+#### Cooldown
+
+**10 seconds**
+
+#### Sources
+
+Randomly fetches from:
+- r/memes
+- r/AdviceAnimals
+- r/dankmemes
+
+#### Example
+
+```bash
+/meme
+```
+
+### Meme information displayed
+
+- Post title
+- Author (with Reddit profile link)
+- Image
+- Upvote count
+- Source subreddit
+- Direct link to Reddit post
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Linking your accounts">
+    To use `/al` and `/mal` commands without specifying usernames:
+    1. Use the `set` command to link your AniList/MyAnimeList accounts
+    2. Once linked, simply use `/al` or `/mal` to view your stats
+    3. Other users can then look up your stats using `/al user:@you`
+  </Accordion>
+
+  <Accordion title="Respecting cooldowns">
+    These commands query external APIs that have rate limits:
+    - Wait for the cooldown to expire before using the command again
+    - Excessive requests may cause temporary API bans
+    - The bot will notify you when you're being rate limited
+  </Accordion>
+
+  <Accordion title="Search tips">
+    For the `/anime` command:
+    - Use the official English or Japanese title for best results
+    - If you don't find what you're looking for, try alternative titles
+    - Use the pagination buttons within 60 seconds before they expire
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<Warning>
+  Common issues:
+  - **"Nothing found"**: Check spelling or try alternative titles
+  - **Rate limiting**: Wait the specified cooldown period
+  - **API unavailable**: External service might be down, try again later
+  - **Account not linked**: Use the `set` command to link your profile
+</Warning>
+
+For persistent issues, join the [Yato Support Server](https://discord.gg/mm7Ke8T).

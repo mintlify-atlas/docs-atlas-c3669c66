@@ -1,0 +1,398 @@
+---
+title: Miscellaneous commands
+description: Information, help, and other useful miscellaneous commands
+---
+
+Miscellaneous commands provide information about the bot, users, servers, and access to documentation and support resources.
+
+## Bot information
+
+Display detailed information about Yato.
+
+### Syntax
+
+```bash
+/botinfo
+```
+
+### Parameters
+
+This command takes no parameters.
+
+### Example
+
+```bash
+/botinfo
+```
+
+### Displayed information
+
+- Bot description and developer credits
+- Current uptime
+- Server count (total servers using Yato)
+- User count (total users across all servers)
+- Command count
+- Node.js version
+- Discord.js library version
+- Inspiration (Noragami anime reference)
+- Interactive buttons:
+  - Invite Yato button
+  - Support Server button
+
+<Note>
+  Yato is named after the main character from the anime **Noragami**. The bot is developed by **ZestY**.
+</Note>
+
+---
+
+## Help menu
+
+Access Yato's help resources and documentation.
+
+### Syntax
+
+```bash
+/help
+```
+
+### Parameters
+
+This command takes no parameters.
+
+### Example
+
+```bash
+/help
+```
+
+### Features
+
+- Link to the official Yato website with detailed command documentation
+- Link to the Support Server for questions and assistance
+- Information about available resources
+
+### Quick links
+
+<CardGroup cols={2}>
+  <Card title="Website" icon="globe" href="https://yatobot.netlify.app">
+    Complete command documentation and guides
+  </Card>
+  <Card title="Support Server" icon="discord" href="https://discord.gg/mm7Ke8T">
+    Get help and report issues
+  </Card>
+</CardGroup>
+
+---
+
+## Server information
+
+Display detailed information about the current Discord server.
+
+### Syntax
+
+```bash
+/serverinfo
+```
+
+### Parameters
+
+This command takes no parameters.
+
+### Example
+
+```bash
+/serverinfo
+```
+
+### Displayed information
+
+<Tabs>
+  <Tab title="General">
+    - Server name
+    - Server ID
+    - Owner username and ID
+    - Server region
+    - Boost tier
+    - Explicit content filter level
+    - Verification level
+    - Creation date (with relative time)
+  </Tab>
+
+  <Tab title="Statistics">
+    - Total role count
+    - Total emoji count (with breakdown):
+      - Regular emojis
+      - Animated emojis
+    - Member count:
+      - Total members
+      - Humans
+      - Bots
+    - Channel counts:
+      - Text channels
+      - Voice channels
+    - Server boost count
+  </Tab>
+
+  <Tab title="Presence">
+    Member status breakdown:
+    - Online members
+    - Idle members
+    - Do Not Disturb members
+    - Offline members
+  </Tab>
+
+  <Tab title="Roles">
+    - List of all server roles (up to 10 shown)
+    - If more than 10 roles, shows: "X more..."
+    - Roles sorted by position (highest first)
+  </Tab>
+</Tabs>
+
+### Visual elements
+
+- Server icon thumbnail
+- Color-coded status indicators
+- Organized field layout
+- Timestamp of when the command was run
+
+---
+
+## User information
+
+Display detailed information about yourself or another user.
+
+### Syntax
+
+```bash
+/userinfo [user:<@user>]
+```
+
+### Parameters
+
+<ParamField path="user" type="User">
+  The user to get information about (optional - defaults to yourself)
+</ParamField>
+
+### Examples
+
+<CodeGroup>
+```bash Your own info
+/userinfo
+```
+
+```bash Another user's info
+/userinfo user:@friend
+```
+</CodeGroup>
+
+### Displayed information
+
+<Tabs>
+  <Tab title="User details">
+    - Username
+    - Discriminator (tag)
+    - User ID
+    - User badges/flags:
+      - Discord Employee
+      - Discord Partner
+      - Bug Hunter (Level 1 & 2)
+      - HypeSquad Events
+      - House Bravery/Brilliance/Balance
+      - Early Supporter
+      - Verified Bot Developer
+      - And more
+    - Avatar link (clickable)
+    - Account creation date
+    - Current status (Online, Idle, DND, Offline)
+    - Current activity/game
+    - Active platforms (Desktop, Web, Mobile)
+  </Tab>
+
+  <Tab title="Member details">
+    - Highest role
+    - Server join date
+    - Hoist role (the role that groups the user in the member list)
+    - All roles (up to 10 shown):
+      - Sorted by position
+      - If more than 10 roles: "X more..."
+  </Tab>
+</Tabs>
+
+### Visual features
+
+- User avatar as thumbnail (512x512, dynamic format)
+- Embed color matches user's highest role color
+- Status emojis for online/idle/dnd/offline
+- Platform emojis for Desktop/Web/Mobile
+
+---
+
+## Avatar
+
+Display a user's avatar in high resolution.
+
+### Syntax
+
+```bash
+/avatar [user:<@user>]
+```
+
+### Parameters
+
+<ParamField path="user" type="User">
+  The user whose avatar you want to see (optional - defaults to yourself)
+</ParamField>
+
+### Examples
+
+<CodeGroup>
+```bash Your own avatar
+/avatar
+```
+
+```bash Another user's avatar
+/avatar user:@friend
+```
+</CodeGroup>
+
+### Features
+
+- High resolution (1024x1024)
+- Dynamic format (GIF for animated avatars, PNG for static)
+- Clickable link to download/view full size
+
+<Note>
+  The avatar is displayed in the highest available quality and supports animated avatars for users with Discord Nitro.
+</Note>
+
+---
+
+## Discord.js documentation
+
+Search the Discord.js documentation directly from Discord.
+
+### Syntax
+
+```bash
+/djs search:<query>
+```
+
+### Parameters
+
+<ParamField path="search" type="String" required>
+  The Discord.js class, method, property, or concept to search for
+</ParamField>
+
+### Examples
+
+<CodeGroup>
+```bash Search for a class
+/djs search:MessageEmbed
+```
+
+```bash Search for a method
+/djs search:Message.reply
+```
+
+```bash Search for a property
+/djs search:Guild.members
+```
+</CodeGroup>
+
+### Features
+
+- Searches the stable Discord.js documentation
+- Returns formatted embed with:
+  - Class/method description
+  - Parameters
+  - Return types
+  - Examples (when available)
+  - Direct link to documentation
+- Interactive delete button (visible for 10 seconds)
+  - Only the command user can delete the response
+
+### Notes
+
+<Info>
+  - Search uses the stable version of Discord.js docs
+  - Results link to the official [discord.js.org](https://discord.js.org/) documentation
+  - If nothing is found, you'll receive an error message with a link to the docs
+</Info>
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Information commands">
+    - Use `/serverinfo` to quickly check server statistics
+    - Use `/userinfo` to learn about new members
+    - Use `/avatar` to get high-quality profile pictures
+    - Commands are read-only and safe to use anywhere
+  </Accordion>
+
+  <Accordion title="Getting help">
+    - Start with `/help` for comprehensive resources
+    - Check the official website for detailed guides
+    - Join the Support Server for personalized assistance
+    - Use `/botinfo` to check if you're running the latest version
+  </Accordion>
+
+  <Accordion title="Developer resources">
+    - Use `/djs` for quick Discord.js API reference
+    - Great for developers building Discord bots
+    - Faster than manually searching documentation
+    - Returns formatted, easy-to-read results
+  </Accordion>
+</AccordionGroup>
+
+## Understanding verification levels
+
+The `/serverinfo` command shows verification levels with fun representations:
+
+| Level | Display | Requirement |
+|-------|---------|-------------|
+| None | None | No requirement |
+| Low | Low | Verified email |
+| Medium | Medium | Registered for 5+ minutes |
+| High | (╯°□°）╯︵ ┻━┻ | Member for 10+ minutes |
+| Very High | ┻━┻ ﾐヽ(ಠ益ಠ)ノ彡┻━┻ | Verified phone number |
+
+## Regional information
+
+Server regions displayed in `/serverinfo`:
+
+- Brazil, Europe, Hong Kong, India, Japan
+- Russia, Singapore, South Africa, Sydney
+- US Central, US East, US West, US South
+
+---
+
+## User flags explained
+
+User badges shown in `/userinfo`:
+
+<AccordionGroup>
+  <Accordion title="Discord Staff & Partners">
+    - **Discord Employee**: Works at Discord
+    - **Discord Partner**: Partnered server owner
+    - **Verified Bot Developer**: Early verified bot developer
+  </Accordion>
+
+  <Accordion title="HypeSquad">
+    - **HypeSquad Events**: Attends Discord community events
+    - **House Bravery**: HypeSquad Bravery member
+    - **House Brilliance**: HypeSquad Brilliance member
+    - **House Balance**: HypeSquad Balance member
+  </Accordion>
+
+  <Accordion title="Bug Hunters & Supporters">
+    - **Bug Hunter Level 1**: Helped find Discord bugs
+    - **Bug Hunter Level 2**: Advanced bug hunter
+    - **Early Supporter**: Supported Discord early (Nitro before Oct 2018)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+For more help or to report issues, join the [Yato Support Server](https://discord.gg/mm7Ke8T).

@@ -1,0 +1,316 @@
+---
+title: Social commands
+description: Roleplay and image commands for social interaction with animated GIFs
+---
+
+Social commands let you interact with other users through fun roleplay actions accompanied by anime-style GIF images. These commands fetch images from popular anime GIF APIs to make your interactions more expressive.
+
+<Note>
+  All social commands display anime-style GIF images from waifu.pics and nekos.life APIs.
+</Note>
+
+## Bite
+
+Bite someone playfully.
+
+### Syntax
+
+```bash
+/bite user:<user> [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User">
+  The user you want to bite
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Example
+
+```bash
+/bite user:@friend reason:"for stealing my snacks"
+```
+
+---
+
+## Blush
+
+Make someone blush or show that you're blushing.
+
+### Syntax
+
+```bash
+/blush [user:<user>] [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User">
+  The user you want to make blush (optional)
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Examples
+
+<CodeGroup>
+```bash Make someone blush
+/blush user:@friend reason:"they're so cute!"
+```
+
+```bash Blush yourself
+/blush
+```
+</CodeGroup>
+
+---
+
+## Cry
+
+Make someone cry or show that you're crying.
+
+### Syntax
+
+```bash
+/cry [user:<user>] [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User">
+  The user you want to make cry (optional)
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Examples
+
+<CodeGroup>
+```bash Make someone cry
+/cry user:@friend reason:"told them a sad story"
+```
+
+```bash Cry yourself
+/cry
+```
+</CodeGroup>
+
+---
+
+## Hug
+
+Give someone a warm hug.
+
+### Syntax
+
+```bash
+/hug user:<user> [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User" required>
+  The user you want to hug
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Example
+
+```bash
+/hug user:@friend reason:"you deserve it!"
+```
+
+<Note>
+  You cannot hug yourself - the bot will tell you that you're lonely!
+</Note>
+
+---
+
+## Kiss
+
+Give someone a kiss.
+
+### Syntax
+
+```bash
+/kiss user:<user> [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User" required>
+  The user you want to kiss
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Example
+
+```bash
+/kiss user:@friend reason:"good luck on the exam!"
+```
+
+<Note>
+  You cannot kiss yourself - the bot will tell you that you're lonely!
+</Note>
+
+---
+
+## Lick
+
+Lick someone playfully.
+
+### Syntax
+
+```bash
+/lick user:<user> [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User" required>
+  The user you want to lick
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Example
+
+```bash
+/lick user:@friend reason:"you look tasty"
+```
+
+---
+
+## Pat
+
+Pat someone on the head.
+
+### Syntax
+
+```bash
+/pat user:<user> [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User" required>
+  The user you want to pat
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Example
+
+```bash
+/pat user:@friend reason:"you did great!"
+```
+
+---
+
+## Slap
+
+Slap someone.
+
+### Syntax
+
+```bash
+/slap user:<user> [reason:"optional text"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User" required>
+  The user you want to slap
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Optional roleplayable reason for the action
+</ParamField>
+
+### Example
+
+```bash
+/slap user:@friend reason:"wake up!"
+```
+
+<Note>
+  If you try to slap yourself, the bot will respond with "Just why?"
+</Note>
+
+---
+
+## Smug
+
+Show a smug expression.
+
+### Syntax
+
+```bash
+/smug
+```
+
+### Parameters
+
+This command takes no parameters - it simply displays a smug anime GIF.
+
+### Example
+
+```bash
+/smug
+```
+
+---
+
+## Usage tips
+
+<AccordionGroup>
+  <Accordion title="Image sources">
+    Images are randomly fetched from:
+    - [waifu.pics](https://waifu.pics) - High-quality anime GIFs
+    - [nekos.life](https://nekos.life) - Additional anime reaction images
+    
+    Some commands (hug, kiss, pat, slap, smug) use both APIs for variety.
+  </Accordion>
+
+  <Accordion title="Error handling">
+    If the image API is temporarily unavailable, you'll see an error message suggesting you:
+    - Try again later
+    - Join the [Support Server](https://discord.gg/mm7Ke8T) if the issue persists
+  </Accordion>
+
+  <Accordion title="Interactive roleplay">
+    These commands are perfect for:
+    - Creating a fun, engaging server atmosphere
+    - Expressing emotions and reactions
+    - Building community through playful interactions
+    - Adding personality to conversations
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<Warning>
+  If images fail to load:
+  - The external API might be temporarily down
+  - Check your internet connection
+  - Try the command again after a few moments
+  - Report persistent issues in the [Support Server](https://discord.gg/mm7Ke8T)
+</Warning>

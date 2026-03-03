@@ -1,0 +1,480 @@
+---
+title: Installation
+description: Detailed installation guide and system requirements for Yato Discord Bot
+---
+
+<Warning>
+  **Archived project**: This repository is now a public archive. The bot code is preserved for educational/reference purposes and may no longer function without updates. Use or deploy at your own discretion.
+</Warning>
+
+This guide provides comprehensive installation instructions for Yato Discord Bot, including system requirements, dependencies, and environment setup.
+
+## System requirements
+
+### Node.js version
+
+<Info>
+  **Original target**: Node.js v14–16 (for discord.js v12)
+  
+  **Recommended for modern use**: Node.js v18+ with migration to discord.js v14+
+</Info>
+
+Yato was originally built for Node.js v14-16, but if you're setting up a new instance, we recommend using Node.js v18 or later for better security and performance.
+
+Check your Node.js version:
+
+```bash
+node --version
+```
+
+### Package manager
+
+You'll need either:
+- **npm** (comes with Node.js)
+- **yarn** (alternative package manager)
+
+Check your npm version:
+
+```bash
+npm --version
+```
+
+### Optional: MongoDB
+
+MongoDB is required only if you plan to use persistence features like:
+- Guild configuration storage
+- User data tracking
+- Token management
+- Custom settings per server
+
+You can run Yato without MongoDB, but these features will be disabled.
+
+**MongoDB options**:
+- Local installation ([MongoDB Community Server](https://www.mongodb.com/try/download/community))
+- Cloud hosting ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas) - free tier available)
+- Docker container: `docker run -d -p 27017:27017 mongo`
+
+### Discord application setup
+
+Before installing Yato, you need a Discord Bot Application:
+
+<Steps>
+  <Step title="Create a Discord Application">
+    1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+    2. Click **New Application**
+    3. Give it a name (e.g., "Yato")
+    4. Click **Create**
+  </Step>
+  
+  <Step title="Create a bot user">
+    1. Navigate to the **Bot** tab in the left sidebar
+    2. Click **Add Bot**
+    3. Confirm by clicking **Yes, do it!**
+  </Step>
+  
+  <Step title="Get your bot token">
+    1. Under the **Bot** tab, find the **Token** section
+    2. Click **Reset Token** (or **Copy** if it's your first time)
+    3. Save this token securely - you'll need it for your `.env` file
+    
+    <Warning>
+      Never share your bot token publicly. Anyone with your token can control your bot.
+    </Warning>
+  </Step>
+  
+  <Step title="Enable privileged intents">
+    Under the **Bot** tab, scroll to **Privileged Gateway Intents** and enable:
+    
+    - **Server Members Intent** (required for member tracking)
+    - **Message Content Intent** (required for message-based commands)
+    - **Presence Intent** (optional, for member status features)
+  </Step>
+  
+  <Step title="Get your Client ID">
+    1. Navigate to the **General Information** tab
+    2. Copy your **Application ID** - this is your `CLIENT_ID`
+  </Step>
+</Steps>
+
+## Installation steps
+
+### 1. Clone the repository
+
+Clone Yato from GitHub:
+
+```bash
+git clone https://github.com/qonTesq/Yato.git
+cd Yato
+```
+
+Or download as ZIP and extract:
+
+```bash
+wget https://github.com/qonTesq/Yato/archive/refs/heads/main.zip
+unzip main.zip
+cd Yato-main
+```
+
+### 2. Install dependencies
+
+Install all required npm packages:
+
+```bash
+npm install
+```
+
+This installs the following key dependencies:
+
+| Package | Version | Purpose |
+| --- | --- | --- |
+| discord.js | ^12.5.3 | Discord API wrapper |
+| gcommands | ^5.2.4 | Slash command framework |
+| mongoose | ^5.12.12 | MongoDB ODM |
+| canvas | ^2.8.0 | Image generation |
+| anilist-node | ^1.9.0 | AniList API wrapper |
+| jikan-node | ^1.2.1 | MyAnimeList API wrapper |
+| gamedig | ^3.0.5 | Game server queries |
+| dotenv | ^9.0.2 | Environment variable loader |
+| moment | ^2.29.1 | Date/time formatting |
+| axios | ^0.21.1 | HTTP client |
+
+<Note>
+  You may see deprecation warnings or security vulnerabilities due to outdated packages. This is expected for an archived project.
+</Note>
+
+### 3. System dependencies for Canvas
+
+The `canvas` package requires system-level libraries:
+
+<CodeGroup>
+```bash Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+```
+
+```bash Fedora/RHEL
+sudo yum install -y gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel
+```
+
+```bash macOS
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
+```
+
+```bash Windows
+# Windows users: node-gyp and windows-build-tools required
+npm install --global windows-build-tools
+npm install --global node-gyp
+```
+</CodeGroup>
+
+If you encounter Canvas installation errors, see the [node-canvas installation guide](https://github.com/Automattic/node-canvas#compiling).
+
+### 4. Configure environment variables
+
+Create a `.env` file in the project root directory:
+
+```bash
+touch .env
+```
+
+Add your configuration:
+
+```bash .env
+# Required
+TOKEN=your_discord_bot_token_here
+CLIENT_ID=your_bot_application_client_id
+
+# Optional - MongoDB (for persistence)
+MONGO_URI=mongodb://localhost:27017/yato
+# Or for MongoDB Atlas:
+# MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/yato?retryWrites=true&w=majority
+
+# Optional - Development (for faster command registration)
+GUILD_ID=your_test_server_id
+
+# Optional - Feature configuration
+LOG_CHANNEL_ID=channel_id_for_logs
+WELCOME_CHANNEL_ID=channel_id_for_welcome_messages
+```
+
+<Tip>
+  Setting `GUILD_ID` during development makes slash commands register instantly in that server instead of waiting for global propagation (up to 1 hour).
+</Tip>
+
+### 5. Verify installation
+
+Check that everything is set up correctly:
+
+```bash
+# Verify .env file exists and is not committed
+cat .env
+git status  # Should show .env as untracked/ignored
+
+# Check Node.js and npm versions
+node --version
+npm --version
+
+# List installed packages
+npm list --depth=0
+```
+
+## Running the bot
+
+### Development mode
+
+For development with automatic restarts on file changes:
+
+```bash
+npm run dev
+```
+
+This uses `nodemon` to watch for changes and restart automatically.
+
+### Production mode
+
+For production deployment:
+
+```bash
+node src/index.js
+```
+
+### Using process managers
+
+For production environments, use a process manager to keep the bot running:
+
+<CodeGroup>
+```bash PM2
+# Install PM2
+npm install -g pm2
+
+# Start bot
+pm2 start src/index.js --name yato
+
+# View logs
+pm2 logs yato
+
+# Restart
+pm2 restart yato
+
+# Auto-start on system boot
+pm2 startup
+pm2 save
+```
+
+```bash systemd (Linux)
+# Create service file: /etc/systemd/system/yato.service
+[Unit]
+Description=Yato Discord Bot
+After=network.target
+
+[Service]
+Type=simple
+User=your_username
+WorkingDirectory=/path/to/Yato
+ExecStart=/usr/bin/node src/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+# Enable and start
+sudo systemctl enable yato
+sudo systemctl start yato
+sudo systemctl status yato
+```
+
+```bash Docker
+# Create Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+COPY . .
+CMD ["node", "src/index.js"]
+
+# Build and run
+docker build -t yato-bot .
+docker run -d --name yato --env-file .env yato-bot
+```
+</CodeGroup>
+
+## Verify bot is running
+
+When Yato starts successfully, you should see:
+
+```
+➤ Logged in as Yato#1234 (123456789012345678)
+✔ Connected to MongoDB
+```
+
+If MongoDB is not configured, you'll see:
+
+```
+➤ Logged in as Yato#1234 (123456789012345678)
+✖ Failed to connect to MongoDB
+[Error details]
+```
+
+This is normal if you're running without database features.
+
+## Invite bot to your server
+
+Generate an OAuth2 invite URL:
+
+<Steps>
+  <Step title="Open URL Generator">
+    In the [Discord Developer Portal](https://discord.com/developers/applications), select your application and go to **OAuth2 → URL Generator**
+  </Step>
+  
+  <Step title="Select scopes">
+    Check these scopes:
+    - `bot`
+    - `applications.commands`
+  </Step>
+  
+  <Step title="Select permissions">
+    Choose permissions based on features you'll use:
+    
+    **Recommended minimum**:
+    - Read Messages/View Channels
+    - Send Messages
+    - Embed Links
+    - Attach Files
+    - Read Message History
+    - Use Slash Commands
+    
+    **For moderation features**:
+    - Kick Members
+    - Ban Members
+    - Manage Roles
+    - Manage Messages
+    - Manage Channels
+    
+    **For voice features** (if implementing music):
+    - Connect
+    - Speak
+    
+    Or simply use **Administrator** for full access (not recommended for production)
+  </Step>
+  
+  <Step title="Copy and use URL">
+    Copy the generated URL, open it in your browser, select your server, and authorize the bot.
+  </Step>
+</Steps>
+
+## Post-installation
+
+### Test the bot
+
+Try these commands in your Discord server:
+
+```
+/help
+/serverinfo
+/userinfo @someone
+```
+
+### Monitor logs
+
+Watch the console output for:
+- Command registrations
+- Error messages
+- Database connection status
+- User interactions
+
+### Security checklist
+
+<Note>
+  - ✅ `.env` is in `.gitignore`
+  - ✅ Bot token is never committed to git
+  - ✅ Elevated commands restricted to admin roles
+  - ✅ Using environment variables for all secrets
+  - ✅ Rate limiting configured for API calls
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Customize bot behavior and configure features
+  </Card>
+  
+  <Card title="Commands" icon="terminal" href="/commands/overview">
+    Explore all available commands
+  </Card>
+  
+  <Card title="Development" icon="code" href="/development/architecture">
+    Learn how to extend Yato with custom commands
+  </Card>
+  
+  <Card title="Deployment" icon="cloud" href="/deployment/hosting">
+    Deploy Yato to production hosting
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+### Common installation issues
+
+<AccordionGroup>
+  <Accordion title="npm install fails with Canvas errors">
+    The `canvas` package requires system dependencies. Install them first:
+    
+    **Ubuntu/Debian**:
+    ```bash
+    sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+    ```
+    
+    **macOS**:
+    ```bash
+    brew install pkg-config cairo pango
+    ```
+    
+    See the [node-canvas documentation](https://github.com/Automattic/node-canvas#compiling) for more details.
+  </Accordion>
+  
+  <Accordion title="Error: Cannot find module 'dotenv'">
+    Dependencies weren't installed properly. Run:
+    
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+  
+  <Accordion title="Bot token is invalid">
+    - Verify you copied the complete token from Discord Developer Portal
+    - Check for extra spaces or newlines in your `.env` file
+    - Regenerate the token if you suspect it was compromised
+  </Accordion>
+  
+  <Accordion title="MongoDB connection timeout">
+    - Verify your MongoDB instance is running
+    - Check the `MONGO_URI` format is correct
+    - For MongoDB Atlas, ensure your IP is whitelisted
+    - Test connection: `mongo "your_connection_string"`
+  </Accordion>
+  
+  <Accordion title="Slash commands not appearing">
+    - Global slash commands can take up to 1 hour to propagate
+    - Set `GUILD_ID` in `.env` for instant registration in a test server
+    - Restart the bot after changing command files
+    - Check bot permissions include "Use Application Commands"
+  </Accordion>
+  
+  <Accordion title="Permission denied errors">
+    The bot lacks necessary permissions in your Discord server:
+    
+    - Re-invite the bot with correct permissions
+    - Check role hierarchy (bot's role must be above roles it manages)
+    - Verify channel-specific permissions
+  </Accordion>
+</AccordionGroup>
+
+### Getting help
+
+If you encounter issues not covered here:
+
+1. Check the [GitHub repository issues](https://github.com/qonTesq/Yato/issues)
+2. Join the [Yato Support Server](https://discord.gg/mm7Ke8T)
+3. Review discord.js documentation for API-related questions

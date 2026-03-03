@@ -1,0 +1,471 @@
+---
+title: Deploy with Docker
+description: Containerized deployment guide for Yato Discord Bot using Docker
+---
+
+<Warning>
+This bot is archived and uses discord.js v12. Consider updating dependencies before production deployment.
+</Warning>
+
+## Overview
+
+Docker provides a containerized, portable deployment solution for Yato. While the source repository doesn't include a Dockerfile, this guide shows you how to create one and deploy the bot in a Docker container.
+
+## Prerequisites
+
+- Docker installed ([get Docker](https://docs.docker.com/get-docker/))
+- Docker Compose (optional, for multi-container setup)
+- Discord bot token
+- MongoDB instance or Atlas connection string
+
+## Creating a Dockerfile
+
+Since the repository doesn't include a Dockerfile, create one in the project root:
+
+```dockerfile Dockerfile
+# Use Node.js 16 (compatible with discord.js v12)
+FROM node:16-alpine
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Install build dependencies for canvas
+RUN apk add --no-cache \
+    build-base \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    pixman-dev
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy application files
+COPY . .
+
+# Run as non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /usr/src/app
+
+USER nodejs
+
+# Start the bot
+CMD ["node", "src/index.js"]
+```
+
+<Info>
+The `canvas` package requires native dependencies. Alpine Linux needs build tools and Cairo libraries.
+</Info>
+
+## Docker Compose setup
+
+For a complete setup with MongoDB, create `docker-compose.yml`:
+
+```yaml docker-compose.yml
+version: '3.8'
+
+services:
+  yato-bot:
+    build: .
+    container_name: yato-bot
+    restart: unless-stopped
+    environment:
+      - TOKEN=${TOKEN}
+      - MONGO_URI=mongodb://mongodb:27017/yato
+      - CLIENT_ID=${CLIENT_ID}
+    depends_on:
+      - mongodb
+    networks:
+      - yato-network
+
+  mongodb:
+    image: mongo:5
+    container_name: yato-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - yato-network
+    ports:
+      - "27017:27017"  # Optional: expose for external access
+
+volumes:
+  mongodb-data:
+
+networks:
+  yato-network:
+    driver: bridge
+```
+
+<Tip>
+This setup includes a local MongoDB container. If using MongoDB Atlas, remove the `mongodb` service and use your Atlas connection string.
+</Tip>
+
+## Environment configuration
+
+Create a `.env` file in the project root:
+
+```bash .env
+TOKEN=your_discord_bot_token
+CLIENT_ID=your_bot_client_id
+MONGO_URI=mongodb://mongodb:27017/yato
+```
+
+<Warning>
+Never commit the `.env` file. Ensure it's in `.gitignore`.
+</Warning>
+
+## Deployment steps
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/qonTesq/Yato.git
+    cd Yato
+    ```
+  </Step>
+  
+  <Step title="Create Dockerfile and docker-compose.yml">
+    Create both files as shown above in the project root.
+  </Step>
+  
+  <Step title="Configure environment variables">
+    Create your `.env` file with the required variables:
+    
+    ```bash
+    TOKEN=your_discord_bot_token
+    MONGO_URI=mongodb://mongodb:27017/yato
+    ```
+  </Step>
+  
+  <Step title="Build the Docker image">
+    ```bash
+    docker-compose build
+    ```
+    
+    Or build without Compose:
+    ```bash
+    docker build -t yato-bot .
+    ```
+  </Step>
+  
+  <Step title="Start the containers">
+    ```bash
+    docker-compose up -d
+    ```
+    
+    The `-d` flag runs containers in detached mode (background).
+  </Step>
+  
+  <Step title="Verify the bot is running">
+    Check container logs:
+    ```bash
+    docker-compose logs -f yato-bot
+    ```
+    
+    You should see:
+    ```
+    ➤ Logged in as YourBotName#1234 (123456789)
+    ✔ Connected to MongoDB
+    ```
+  </Step>
+</Steps>
+
+## Managing your Docker deployment
+
+### View logs
+
+<CodeGroup>
+```bash Follow logs
+docker-compose logs -f yato-bot
+```
+
+```bash Recent logs
+docker-compose logs --tail=100 yato-bot
+```
+
+```bash All services
+docker-compose logs -f
+```
+</CodeGroup>
+
+### Restart the bot
+
+```bash
+docker-compose restart yato-bot
+```
+
+### Stop the bot
+
+```bash
+docker-compose stop
+```
+
+### Stop and remove containers
+
+```bash
+docker-compose down
+```
+
+<Warning>
+This removes containers but preserves the `mongodb-data` volume. Use `docker-compose down -v` to delete volumes too.
+</Warning>
+
+### Update the bot
+
+When you update the code:
+
+<Steps>
+  <Step title="Pull changes">
+    ```bash
+    git pull origin main
+    ```
+  </Step>
+  
+  <Step title="Rebuild image">
+    ```bash
+    docker-compose build
+    ```
+  </Step>
+  
+  <Step title="Restart with new image">
+    ```bash
+    docker-compose up -d
+    ```
+  </Step>
+</Steps>
+
+## Production deployment options
+
+### Deploy to a VPS
+
+<Steps>
+  <Step title="Set up a VPS">
+    Choose a provider:
+    - DigitalOcean (starting at $4/month)
+    - Linode
+    - Vultr
+    - AWS EC2
+  </Step>
+  
+  <Step title="Install Docker on VPS">
+    ```bash
+    # Ubuntu/Debian
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+    ```
+  </Step>
+  
+  <Step title="Clone repository on VPS">
+    ```bash
+    git clone https://github.com/qonTesq/Yato.git
+    cd Yato
+    ```
+  </Step>
+  
+  <Step title="Configure and deploy">
+    Follow the deployment steps above to build and run containers.
+  </Step>
+</Steps>
+
+### Using Docker with MongoDB Atlas
+
+To use MongoDB Atlas instead of a local container:
+
+1. **Modify docker-compose.yml** - remove the `mongodb` service:
+
+```yaml docker-compose.yml
+version: '3.8'
+
+services:
+  yato-bot:
+    build: .
+    container_name: yato-bot
+    restart: unless-stopped
+    environment:
+      - TOKEN=${TOKEN}
+      - MONGO_URI=${MONGO_URI}
+      - CLIENT_ID=${CLIENT_ID}
+    networks:
+      - yato-network
+
+networks:
+  yato-network:
+    driver: bridge
+```
+
+2. **Update .env** with Atlas connection string:
+
+```bash .env
+TOKEN=your_discord_bot_token
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/yato?retryWrites=true&w=majority
+```
+
+## Running without Docker Compose
+
+If you prefer using Docker CLI directly:
+
+<Steps>
+  <Step title="Build the image">
+    ```bash
+    docker build -t yato-bot .
+    ```
+  </Step>
+  
+  <Step title="Run MongoDB container">
+    ```bash
+    docker run -d \
+      --name yato-mongodb \
+      --network yato-net \
+      -v mongodb-data:/data/db \
+      mongo:5
+    ```
+  </Step>
+  
+  <Step title="Run bot container">
+    ```bash
+    docker run -d \
+      --name yato-bot \
+      --network yato-net \
+      --env-file .env \
+      --restart unless-stopped \
+      yato-bot
+    ```
+  </Step>
+</Steps>
+
+## Optimizing the Docker image
+
+### Multi-stage build
+
+Reduce image size with a multi-stage Dockerfile:
+
+```dockerfile Dockerfile.optimized
+# Build stage
+FROM node:16-alpine AS builder
+WORKDIR /usr/src/app
+
+RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev pixman-dev
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Production stage
+FROM node:16-alpine
+WORKDIR /usr/src/app
+
+RUN apk add --no-cache cairo jpeg pango giflib pixman
+
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY . .
+
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /usr/src/app
+
+USER nodejs
+
+CMD ["node", "src/index.js"]
+```
+
+### .dockerignore
+
+Create `.dockerignore` to exclude unnecessary files:
+
+```text .dockerignore
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+.vscode
+.vs
+README.md
+.eslintrc.json
+```
+
+## Troubleshooting
+
+### Bot container exits immediately
+
+Check logs for errors:
+```bash
+docker-compose logs yato-bot
+```
+
+Common issues:
+- Missing or invalid `TOKEN` environment variable
+- MongoDB connection failure
+- Missing dependencies for Canvas
+
+### Canvas build failures
+
+Ensure all build dependencies are installed:
+```dockerfile
+RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev pixman-dev
+```
+
+### MongoDB connection refused
+
+If using Docker Compose:
+- Ensure both services are on the same network
+- Use service name (`mongodb`) as hostname, not `localhost`
+- Check `depends_on` in docker-compose.yml
+
+### Out of memory errors
+
+Increase container memory limit:
+
+```yaml docker-compose.yml
+services:
+  yato-bot:
+    # ... other config
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+```
+
+## Monitoring and maintenance
+
+### Health checks
+
+Add a health check to your Dockerfile:
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
+  CMD node -e "require('discord.js')" || exit 1
+```
+
+### Automatic restarts
+
+The `restart: unless-stopped` policy in docker-compose.yml ensures the bot restarts automatically after crashes or server reboots.
+
+### Log rotation
+
+Configure Docker logging driver to prevent disk space issues:
+
+```yaml docker-compose.yml
+services:
+  yato-bot:
+    # ... other config
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+## Additional resources
+
+- [Docker Documentation](https://docs.docker.com/)
+- [Docker Compose Reference](https://docs.docker.com/compose/compose-file/)
+- [Node.js Docker Best Practices](https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md)
+- [MongoDB Docker Hub](https://hub.docker.com/_/mongo)

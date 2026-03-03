@@ -1,0 +1,123 @@
+---
+title: Command overview
+description: Learn how to use Yato's command system and get started with slash commands
+---
+
+Yato is a multi-purpose Discord bot that supports both slash commands and mention-based commands. All commands are designed to be easy to use and provide rich, interactive responses.
+
+## How to use commands
+
+Yato supports two ways to invoke commands:
+
+<Tabs>
+  <Tab title="Slash commands">
+    Slash commands are the modern way to interact with Discord bots. Simply type `/` in any channel where Yato has permissions, and a list of available commands will appear.
+
+    ```bash
+    /ping
+    /help
+    /anime search:Naruto
+    ```
+
+    <Note>
+      Slash commands provide autocomplete and built-in parameter validation, making them easier to use.
+    </Note>
+  </Tab>
+
+  <Tab title="Mention commands">
+    You can also invoke commands by mentioning Yato followed by the command name.
+
+    ```bash
+    @Yato ping
+    @Yato help
+    @Yato anime Naruto
+    ```
+  </Tab>
+</Tabs>
+
+## Command categories
+
+Yato's commands are organized into the following categories:
+
+<CardGroup cols={2}>
+  <Card title="Moderation" icon="shield" href="/commands/moderation">
+    Server moderation commands for managing members
+  </Card>
+  <Card title="Social" icon="heart" href="/commands/social">
+    Roleplay and image commands for social interaction
+  </Card>
+  <Card title="Anime" icon="tv" href="/commands/anime">
+    Anime and manga information from AniList and MyAnimeList
+  </Card>
+  <Card title="Games" icon="gamepad" href="/commands/games">
+    Game server status and Discord activities
+  </Card>
+  <Card title="Utilities" icon="wrench" href="/commands/utilities">
+    Useful utility commands for server management
+  </Card>
+  <Card title="Miscellaneous" icon="ellipsis" href="/commands/misc">
+    Information, help, and other miscellaneous commands
+  </Card>
+</CardGroup>
+
+## Understanding parameters
+
+Command parameters are shown with specific notation:
+
+- `<parameter>` - Required parameter (must be provided)
+- `[parameter]` - Optional parameter (can be omitted)
+
+### Parameter types
+
+Different commands accept different types of parameters:
+
+| Type | Description | Example |
+|------|-------------|-------|
+| User | Select a Discord user | `@username` |
+| String | Text input | `"Hello World"` |
+| Number | Numeric value | `10`, `50`, `100` |
+| Channel | Select a Discord channel | `#general` |
+
+## Permissions
+
+Some commands require specific permissions to use:
+
+<AccordionGroup>
+  <Accordion title="User permissions">
+    These permissions are required for the user invoking the command:
+    - `BAN_MEMBERS` - Required for `/ban` command
+    - `KICK_MEMBERS` - Required for `/kick` command
+    - `MANAGE_MESSAGES` - Required for `/purge` command
+    - `CREATE_INSTANT_INVITE` - Required for `/activities` command
+  </Accordion>
+
+  <Accordion title="Bot permissions">
+    Yato requires these permissions to execute certain commands:
+    - `BAN_MEMBERS` - Required to ban users
+    - `KICK_MEMBERS` - Required to kick users
+    - `MANAGE_MESSAGES` - Required to purge messages
+    - `CREATE_INSTANT_INVITE` - Required to create activity invites
+  </Accordion>
+</AccordionGroup>
+
+## Cooldowns
+
+To prevent spam and rate limiting, some commands have cooldowns:
+
+- Default cooldown: **3 seconds**
+- Command-specific cooldowns:
+  - `/anime`, `/mal`, `/al` - 10-20 seconds
+  - `/activities` - 10 seconds
+  - `/animeme`, `/meme` - 10 seconds
+
+## Need help?
+
+If you need assistance with any command:
+
+1. Use `/help` to access the help menu and website
+2. Join the [Yato Support Server](https://discord.gg/mm7Ke8T)
+3. Check individual command pages for detailed examples
+
+<Note>
+  All commands can be used in any server where Yato has been invited with appropriate permissions.
+</Note>

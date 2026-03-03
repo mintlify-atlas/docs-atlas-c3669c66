@@ -1,0 +1,263 @@
+---
+title: Bot architecture
+description: Understanding Yato's structure, components, and the gcommands framework
+---
+
+Yato is built on Discord.js v12 and uses the gcommands framework for command handling. This page explains the core architecture and how different components work together.
+
+## Project structure
+
+The bot follows a modular architecture with clear separation of concerns:
+
+```
+src/
+├── index.js              # Entry point and bot initialization
+├── commands/             # Command modules organized by category
+│   ├── games/
+│   ├── images/
+│   ├── information/
+│   ├── memes/
+│   ├── misc/
+│   ├── moderation/
+│   ├── utilities/
+│   └── weeb/
+├── models/               # MongoDB schema definitions
+│   ├── css.js
+│   └── user.js
+├── structures/           # Custom classes and utilities
+│   ├── BotEmbed.js
+│   ├── CanvasUtils.js
+│   ├── CanvasTemplates.js
+│   └── utils.js
+└── config/               # Configuration files
+    ├── colors.json
+    ├── emojis.json
+    └── message.json
+```
+
+## Core initialization
+
+The bot initializes in `src/index.js:1` with the following flow:
+
+<Steps>
+  <Step title="Load environment variables">
+    The bot loads configuration from `.env` using dotenv.
+    
+    ```js
+    require('dotenv').config();
+    ```
+  </Step>
+
+  <Step title="Initialize Canvas utilities">
+    Custom canvas helpers are registered before the client starts.
+    
+    ```js
+    require('./structures/CanvasUtils').initializeHelpers();
+    ```
+  </Step>
+
+  <Step title="Create Discord client">
+    The Discord.js client is created with allowed mentions configuration.
+    
+    ```js
+    const client = new Discord.Client({ 
+      allowedMentions: { parse: ['users', 'roles'] } 
+    });
+    ```
+  </Step>
+
+  <Step title="Connect to MongoDB">
+    Database connection is established in the ready event at `src/index.js:11`.
+    
+    ```js
+    await mongoose.connect(process.env.MONGO_URI, { 
+      useNewUrlParser: true, 
+      useUnifiedTopology: true 
+    });
+    ```
+  </Step>
+
+  <Step title="Initialize gcommands">
+    The gcommands framework is configured to handle commands at `src/index.js:15`.
+    
+    ```js
+    const GCommandsClient = new GCommands(client, {
+      cmdDir: 'src/commands/',
+      language: 'english',
+      ownLanguageFile: require('./config/message.json'),
+      unkownCommandMessage: true,
+      slash: {
+        slash: 'both',
+        prefix: `^<@!?${client.user.id}> `
+      },
+      defaultCooldown: '3s'
+    });
+    ```
+  </Step>
+</Steps>
+
+## The gcommands framework
+
+Yato uses gcommands v5.2.4 to handle both slash commands and message-based commands with a single codebase.
+
+### Key features
+
+<CardGroup cols={2}>
+  <Card title="Dual command support" icon="slash">
+    Commands work as both slash commands and mention-based prefix commands (`@Yato help`).
+  </Card>
+  
+  <Card title="Automatic registration" icon="folder-tree">
+    Commands in `src/commands/` are automatically loaded and registered.
+  </Card>
+  
+  <Card title="Built-in validation" icon="shield-check">
+    Permission checks, argument validation, and cooldowns are handled by the framework.
+  </Card>
+  
+  <Card title="Interaction components" icon="square-check">
+    Provides utilities for buttons, select menus, and other Discord components.
+  </Card>
+</CardGroup>
+
+### Configuration options
+
+The gcommands client accepts several configuration options:
+
+| Option | Value | Purpose |
+|--------|-------|----------|
+| `cmdDir` | `'src/commands/'` | Directory containing command modules |
+| `language` | `'english'` | Default language for built-in messages |
+| `ownLanguageFile` | Custom JSON | Override default error messages |
+| `slash` | `'both'` | Enable both slash and prefix commands |
+| `prefix` | Mention regex | Commands triggered by mentioning the bot |
+| `defaultCooldown` | `'3s'` | Default cooldown between command uses |
+
+## Custom structures
+
+Yato extends Discord.js functionality with custom structures:
+
+### BotEmbed
+
+Located at `src/structures/BotEmbed.js:1`, this class extends `MessageEmbed` with a `splitFields()` method that automatically handles long content by splitting it across multiple embed fields.
+
+```js
+const BotEmbed = require('./structures/BotEmbed');
+const embed = new BotEmbed()
+  .splitFields('Long Title', veryLongContent);
+```
+
+### CanvasUtils
+
+Provides image manipulation helpers at `src/structures/CanvasUtils.js:1`:
+
+- **Custom context methods**: `roundImage()`, `circle()`, `roundRect()`, `write()`
+- **Font registration**: Montserrat and Segoe UI families
+- **Text alignment**: 9-point alignment system (top-left, center, etc.)
+- **Advanced effects**: Blur, icon coloring, paragraph wrapping
+
+<Info>
+  Canvas utilities must be initialized before the bot starts by calling `CanvasUtils.initializeHelpers()` in the entry file.
+</Info>
+
+### Utils module
+
+The `src/structures/utils.js:1` file contains shared utilities:
+
+- `cleanHTML()` - Strip HTML tags from text
+- `descriptionParser()` - Truncate descriptions to 800 characters
+- `formatPerms()` - Format permission names for display
+- `formatArray()` - Format arrays using Intl.ListFormat
+- `animeMangaSearch()` - Search anime/manga via AniList API
+- `redditFetcher()` - Fetch posts from Reddit
+
+## Command categories
+
+Commands are organized into logical categories:
+
+<AccordionGroup>
+  <Accordion title="Games" icon="gamepad">
+    Game server queries and integrations (Counter-Strike, Minecraft)
+  </Accordion>
+  
+  <Accordion title="Images" icon="image">
+    Anime reaction images (hug, pat, kiss, slap, etc.)
+  </Accordion>
+  
+  <Accordion title="Information" icon="circle-info">
+    Server info, user info, bot stats, help menu
+  </Accordion>
+  
+  <Accordion title="Memes" icon="face-grin-tears">
+    Meme and anime meme fetching from Reddit
+  </Accordion>
+  
+  <Accordion title="Misc" icon="ellipsis">
+    Discord activities, avatars, documentation search
+  </Accordion>
+  
+  <Accordion title="Moderation" icon="gavel">
+    Kick, ban, and other moderation actions
+  </Accordion>
+  
+  <Accordion title="Utilities" icon="wrench">
+    Ping, uptime, purge messages, announcements
+  </Accordion>
+  
+  <Accordion title="Weeb" icon="torii-gate">
+    AniList and MyAnimeList integrations
+  </Accordion>
+</AccordionGroup>
+
+## Status rotation
+
+The bot rotates between different status messages every 15 seconds:
+
+```js
+const statuses = [
+  `/help | @Yato help`,
+  `${client.guilds.cache.size} Servers!`
+];
+setInterval(() => {
+  const status = statuses[Math.floor(Math.random() * statuses.length)];
+  client.user.setPresence({ 
+    activity: { name: status, type: 'LISTENING' }, 
+    status: 'idle' 
+  });
+}, 15000);
+```
+
+## Dependencies
+
+Key dependencies used by Yato:
+
+<CodeGroup>
+```json Core
+{
+  "discord.js": "^12.5.3",
+  "gcommands": "^5.2.4",
+  "mongoose": "^5.12.12"
+}
+```
+
+```json Features
+{
+  "anilist-node": "^1.9.0",
+  "axios": "^0.21.1",
+  "canvas": "^2.8.0",
+  "gamedig": "^3.0.5"
+}
+```
+
+```json Utilities
+{
+  "moment": "^2.29.1",
+  "ms": "^2.1.3",
+  "dotenv": "^9.0.2"
+}
+```
+</CodeGroup>
+
+<Warning>
+  The bot uses Discord.js v12, which is outdated. See the [upgrading guide](/development/upgrading-discordjs) for migration to v14+.
+</Warning>

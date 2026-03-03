@@ -1,0 +1,188 @@
+---
+title: Moderation features
+description: Keep your Discord server safe and organized with Yato's powerful moderation commands
+---
+
+Yato provides essential moderation tools to help server administrators maintain order and enforce rules. All moderation commands require appropriate permissions for both the user and the bot.
+
+## Overview
+
+Moderation features in Yato include member management (ban, kick) and message cleanup tools. These commands are designed with safety checks to prevent misuse and ensure proper permission hierarchy.
+
+<CardGroup cols={2}>
+  <Card title="Ban" icon="gavel" href="#ban-members">
+    Permanently remove users from your server
+  </Card>
+  <Card title="Kick" icon="user-minus" href="#kick-members">
+    Temporarily remove users from your server
+  </Card>
+  <Card title="Purge" icon="broom" href="#purge-messages">
+    Bulk delete messages from channels
+  </Card>
+</CardGroup>
+
+## Ban members
+
+Permanently ban a user from your server with an optional reason.
+
+### Usage
+
+```
+/ban user:<user> [reason:<text>]
+```
+
+### Parameters
+
+- `user` (required) - Select the user you want to ban from the dropdown menu
+- `reason` (optional) - Provide a reason for the ban that will be logged
+
+### Required permissions
+
+<CardGroup cols={2}>
+  <Card title="User permission">
+    BAN_MEMBERS
+  </Card>
+  <Card title="Bot permission">
+    BAN_MEMBERS
+  </Card>
+</CardGroup>
+
+### Example
+
+```
+/ban user:@spammer reason:Repeated spam in chat
+```
+
+When executed, Yato will:
+1. Verify you have permission to ban members
+2. Check that the bot can ban the target user (role hierarchy)
+3. Prevent you from banning yourself
+4. Ban the user and display a success message
+
+<Warning>
+  You cannot ban users who have a higher or equal role to the bot, or users with higher roles than yourself.
+</Warning>
+
+## Kick members
+
+Temporarily remove a user from your server. Unlike banning, kicked users can rejoin if they have a valid invite link.
+
+### Usage
+
+```
+/kick user:<user> [reason:<text>]
+```
+
+### Parameters
+
+- `user` (required) - Select the user you want to kick from the dropdown menu
+- `reason` (optional) - Provide a reason for the kick that will be logged
+
+### Required permissions
+
+<CardGroup cols={2}>
+  <Card title="User permission">
+    KICK_MEMBERS
+  </Card>
+  <Card title="Bot permission">
+    KICK_MEMBERS
+  </Card>
+</CardGroup>
+
+### Example
+
+```
+/kick user:@troublemaker reason:Breaking server rules
+```
+
+The command follows the same safety checks as the ban command:
+- Verifies proper permissions
+- Checks role hierarchy
+- Prevents self-kicks
+- Displays confirmation when successful
+
+<Info>
+  If no reason is provided, the action will be logged as "No reason provided by [your username]"
+</Info>
+
+## Purge messages
+
+Bulk delete messages from a channel to clean up spam, off-topic content, or unwanted messages.
+
+### Usage
+
+```
+/purge number:<amount>
+```
+
+### Parameters
+
+- `number` (required) - The number of messages to delete (1-100)
+
+### Required permissions
+
+<CardGroup cols={2}>
+  <Card title="User permission">
+    MANAGE_MESSAGES
+  </Card>
+  <Card title="Bot permission">
+    MANAGE_MESSAGES
+  </Card>
+</CardGroup>
+
+### Examples
+
+```
+/purge number:10
+```
+
+```
+/purge number:50
+```
+
+### Limitations
+
+<Note>
+  - Maximum 100 messages can be purged at once
+  - Messages older than 14 days cannot be purged (Discord API limitation)
+  - The bot must have access to the channel and proper permissions
+</Note>
+
+If the purge fails due to old messages or permission issues, Yato will display an error message with a link to the support server for assistance.
+
+## Best practices
+
+### Document your actions
+
+Always provide a reason when using moderation commands. This helps maintain transparency and creates an audit trail for server staff.
+
+### Check permissions first
+
+Before executing moderation commands, ensure:
+- Yato's role is positioned high enough in the role hierarchy
+- Yato has the required permissions in the target channel
+- You have the necessary permissions to execute the command
+
+### Use purge responsibly
+
+The purge command is powerful but irreversible. Consider:
+- Reviewing messages before purging when possible
+- Starting with smaller numbers to test
+- Communicating with your community about cleanup actions
+
+## Troubleshooting
+
+### "I can't ban/kick this member"
+
+This error occurs when:
+- The target user has a role equal to or higher than the bot's highest role
+- The bot lacks the required permission
+- You're trying to ban/kick yourself
+
+**Solution**: Ensure Yato's role is positioned above the target user's highest role in Server Settings > Roles.
+
+### "Purge failed for old messages"
+
+Discord's API prevents bulk deletion of messages older than 14 days.
+
+**Solution**: For older messages, you'll need to delete them manually or use Discord's built-in message search and delete feature.

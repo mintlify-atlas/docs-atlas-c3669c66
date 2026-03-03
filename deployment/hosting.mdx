@@ -1,0 +1,155 @@
+---
+title: Hosting considerations
+description: General hosting options and requirements for deploying Yato Discord Bot
+---
+
+<Warning>
+This bot is archived and uses outdated dependencies (discord.js v12). Consider updating to discord.js v14+ and Node.js 18+ before deploying to production.
+</Warning>
+
+## Overview
+
+Yato Discord Bot can be deployed to various hosting platforms. This guide covers general hosting considerations and requirements that apply regardless of your chosen platform.
+
+## System requirements
+
+<Info>
+The original bot targeted Node.js v14-16. For modern deployments, Node.js 18+ is recommended.
+</Info>
+
+### Minimum specifications
+
+- **Node.js**: v14+ (v18+ recommended)
+- **Memory**: 512MB RAM minimum
+- **Storage**: 1GB for dependencies and cache
+- **Network**: Stable outbound connection to Discord API
+
+### Required services
+
+<Steps>
+  <Step title="Discord application">
+    Create a Discord bot application at the [Discord Developer Portal](https://discord.com/developers/applications) and obtain your bot token.
+  </Step>
+  
+  <Step title="MongoDB instance (optional)">
+    MongoDB is only required if you use persistence features like guild config, user data, or custom tokens. You can use:
+    - MongoDB Atlas (free tier available)
+    - Self-hosted MongoDB
+    - Docker container
+  </Step>
+  
+  <Step title="Environment variables">
+    Prepare your environment configuration (see below).
+  </Step>
+</Steps>
+
+## Environment variables
+
+Create a `.env` file with the following required variables:
+
+```bash .env
+TOKEN=your_discord_bot_token
+MONGO_URI=your_mongodb_connection_string
+```
+
+### Optional variables
+
+```bash .env
+CLIENT_ID=your_bot_application_client_id
+GUILD_ID=optional_test_guild_id
+LOG_CHANNEL_ID=channel_for_logging
+WELCOME_CHANNEL_ID=channel_for_welcome_messages
+```
+
+<Tip>
+Use `GUILD_ID` during development for faster slash command registration limited to a single test server.
+</Tip>
+
+## Discord bot permissions
+
+Your bot requires the following permissions:
+
+- **Gateway Intents**: Server Members, Message Content (if using legacy commands)
+- **Bot Permissions**: 
+  - Send Messages
+  - Embed Links
+  - Attach Files
+  - Manage Messages (for moderation)
+  - Manage Roles (for role commands)
+  - Kick Members / Ban Members (for moderation)
+  - Read Message History
+
+## Hosting platform options
+
+Yato can be deployed to various platforms:
+
+| Platform | Cost | Pros | Cons |
+|----------|------|------|------|
+| Heroku | Free tier available (limited hours) | Easy deployment, git integration | Dynos sleep after inactivity |
+| Railway | Free tier with limits | Modern interface, automatic deployments | Resource limits on free tier |
+| DigitalOcean | Starting at $4/month | Full control, always-on | Requires server management |
+| AWS EC2 | Free tier 12 months | Scalable, reliable | Complex setup |
+| Docker (VPS) | VPS cost | Portable, reproducible | Requires Docker knowledge |
+| Replit | Free tier available | Browser-based, easy setup | Performance limitations |
+
+<Note>
+For production use with multiple servers, choose a platform that doesn't sleep (paid tier or VPS).
+</Note>
+
+## Security best practices
+
+<Steps>
+  <Step title="Never commit secrets">
+    Keep your `.env` file out of version control. The `.gitignore` already includes `.env`.
+  </Step>
+  
+  <Step title="Restrict command permissions">
+    Limit elevated commands (ban, kick, purge) to admin roles or specific role IDs in your bot configuration.
+  </Step>
+  
+  <Step title="Validate external input">
+    Sanitize user-generated content before rendering on Canvas or passing to external APIs.
+  </Step>
+  
+  <Step title="Monitor rate limits">
+    Implement proper rate limiting for Discord API and third-party API calls (AniList, Jikan).
+  </Step>
+  
+  <Step title="Update dependencies">
+    Regularly audit and update packages to address security vulnerabilities.
+  </Step>
+</Steps>
+
+## Performance optimization
+
+### Memory management
+
+- Monitor memory usage, especially with Canvas operations
+- Clear caches periodically for long-running instances
+- Use MongoDB connection pooling
+
+### API efficiency
+
+- Cache frequently accessed data (anime info, server stats)
+- Implement request queuing for rate-limited APIs
+- Use Discord.js collection caching appropriately
+
+## Monitoring and logging
+
+Consider implementing:
+
+- **Process manager**: PM2 for automatic restarts and logging
+- **Error tracking**: Sentry or similar service
+- **Uptime monitoring**: UptimeRobot or StatusCake
+- **Log aggregation**: For debugging deployment issues
+
+<Tip>
+The bot includes basic console logging. Enhance this with structured logging (Winston, Pino) for production deployments.
+</Tip>
+
+## Next steps
+
+Choose your deployment platform:
+
+- [Deploy to Heroku](/deployment/heroku) - Quick deployment with git integration
+- [Deploy with Docker](/deployment/docker) - Containerized deployment for any platform

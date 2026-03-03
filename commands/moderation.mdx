@@ -1,0 +1,143 @@
+---
+title: Moderation commands
+description: Server moderation commands for managing members and maintaining order
+---
+
+Moderation commands help server administrators and moderators manage their community effectively. These commands require specific permissions for both the user and the bot.
+
+<Warning>
+  Moderation commands can only be used by members with appropriate permissions. Make sure Yato has the required permissions in your server.
+</Warning>
+
+## Ban
+
+Ban a user from the server permanently.
+
+### Syntax
+
+```bash
+/ban user:<user> [reason:"optional reason"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User" required>
+  The user to ban from the server
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Reason for banning the user (will be shown in audit logs)
+</ParamField>
+
+### Required permissions
+
+<CardGroup cols={2}>
+  <Card title="User permission" icon="user">
+    `BAN_MEMBERS`
+  </Card>
+  <Card title="Bot permission" icon="robot">
+    `BAN_MEMBERS`
+  </Card>
+</CardGroup>
+
+### Examples
+
+<CodeGroup>
+```bash Basic ban
+/ban user:@baduser
+```
+
+```bash Ban with reason
+/ban user:@baduser reason:"Spamming and harassment"
+```
+</CodeGroup>
+
+### Notes
+
+- You cannot ban yourself
+- The bot cannot ban users with higher or equal roles
+- The ban reason will include the moderator's username
+- If no reason is provided, it will show "No reason provided by [username]"
+
+---
+
+## Kick
+
+Kick a user from the server (they can rejoin with an invite).
+
+### Syntax
+
+```bash
+/kick user:<user> [reason:"optional reason"]
+```
+
+### Parameters
+
+<ParamField path="user" type="User" required>
+  The user to kick from the server
+</ParamField>
+
+<ParamField path="reason" type="String">
+  Reason for kicking the user (will be shown in audit logs)
+</ParamField>
+
+### Required permissions
+
+<CardGroup cols={2}>
+  <Card title="User permission" icon="user">
+    `KICK_MEMBERS`
+  </Card>
+  <Card title="Bot permission" icon="robot">
+    `KICK_MEMBERS`
+  </Card>
+</CardGroup>
+
+### Examples
+
+<CodeGroup>
+```bash Basic kick
+/kick user:@troublemaker
+```
+
+```bash Kick with reason
+/kick user:@troublemaker reason:"Breaking server rules"
+```
+</CodeGroup>
+
+### Notes
+
+- You cannot kick yourself
+- The bot cannot kick users with higher or equal roles
+- The kick reason will include the moderator's username
+- If no reason is provided, it will show "No reason provided by [username]"
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Always provide reasons">
+    Including a reason with moderation actions helps maintain transparency and creates a clear moderation history in your server's audit logs.
+  </Accordion>
+
+  <Accordion title="Check role hierarchy">
+    Ensure Yato's role is positioned higher than the roles of users you want to moderate. The bot cannot take action against users with equal or higher roles.
+  </Accordion>
+
+  <Accordion title="Set up proper permissions">
+    Only grant moderation permissions to trusted members. These commands can significantly impact your server.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<Warning>
+  If you receive an error that the bot cannot ban/kick a member, check:
+  - Yato has the required permissions
+  - Yato's role is higher than the target user's highest role
+  - You have the required permissions to use the command
+</Warning>
+
+## Need help?
+
+For additional support with moderation commands, join the [Yato Support Server](https://discord.gg/mm7Ke8T).

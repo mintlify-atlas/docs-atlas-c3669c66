@@ -1,0 +1,285 @@
+---
+title: Social and roleplay interactions
+description: Express yourself with anime-style roleplay commands and interactive social features
+---
+
+Yato brings fun and engagement to your server with interactive roleplay commands. These commands display anime-style GIFs fetched from waifu.pics and nekos.life APIs, making server interactions more dynamic and entertaining.
+
+## Overview
+
+Roleplay commands let users interact with each other through visual expressions. Each command posts an animated GIF with a custom message showing the interaction between users.
+
+<CardGroup cols={3}>
+  <Card title="Hug" icon="heart">
+    Give someone a warm hug
+  </Card>
+  <Card title="Kiss" icon="kiss">
+    Show affection with a kiss
+  </Card>
+  <Card title="Pat" icon="hand">
+    Pat someone on the head
+  </Card>
+  <Card title="Slap" icon="hand-back-fist">
+    Playfully slap someone
+  </Card>
+  <Card title="Bite" icon="teeth">
+    Give someone a playful bite
+  </Card>
+  <Card title="Lick" icon="face-tongue-sweat">
+    Lick someone playfully
+  </Card>
+  <Card title="Blush" icon="face-flushed">
+    Make someone blush
+  </Card>
+  <Card title="Cry" icon="face-sad-tear">
+    Make someone cry (or cry yourself)
+  </Card>
+  <Card title="Smug" icon="face-smirk">
+    Show off your smug expression
+  </Card>
+</CardGroup>
+
+## Interactive commands
+
+Most roleplay commands require you to mention another user. These commands create engaging social moments in your server.
+
+### Hug
+
+Give someone a warm, comforting hug.
+
+```
+/hug user:<user> [reason:<text>]
+```
+
+**Example:**
+```
+/hug user:@friend reason:for being awesome
+```
+
+This displays an animated hug GIF with the message:
+> **YourName** *hugs* @friend, for being awesome
+
+### Kiss
+
+Show affection with a kiss.
+
+```
+/kiss user:<user> [reason:<text>]
+```
+
+**Example:**
+```
+/kiss user:@partner reason:happy anniversary
+```
+
+### Pat
+
+Give someone a gentle head pat.
+
+```
+/pat user:<user> [reason:<text>]
+```
+
+**Example:**
+```
+/pat user:@friend reason:you did great
+```
+
+<Info>
+  The `reason` parameter is optional for all interactive commands, but it adds context and personality to your interactions.
+</Info>
+
+### Slap
+
+Playfully slap someone (all in good fun!).
+
+```
+/slap user:<user> [reason:<text>]
+```
+
+**Example:**
+```
+/slap user:@friend reason:for that terrible pun
+```
+
+<Warning>
+  You cannot target yourself with slap - Yato will respond with "Just why?"
+</Warning>
+
+### Bite
+
+Give someone a playful bite.
+
+```
+/bite user:<user> [reason:<text>]
+```
+
+**Example:**
+```
+/bite user:@friend reason:nom nom nom
+```
+
+### Lick
+
+Lick someone in a playful manner.
+
+```
+/lick user:<user> [reason:<text>]
+```
+
+**Example:**
+```
+/lick user:@friend
+```
+
+## Expression commands
+
+These commands can be used on yourself or others to express emotions.
+
+### Blush
+
+Make someone blush or show that you're blushing.
+
+```
+/blush [user:<user>] [reason:<text>]
+```
+
+**Examples:**
+```
+/blush user:@crush reason:you're so sweet
+```
+
+```
+/blush
+```
+
+When used without a target, it shows you blushing. When targeting someone else, it shows you making them blush.
+
+### Cry
+
+Show that you're crying or make someone cry.
+
+```
+/cry [user:<user>] [reason:<text>]
+```
+
+**Examples:**
+```
+/cry user:@friend reason:that was so sad
+```
+
+```
+/cry
+```
+
+### Smug
+
+Display a smug expression.
+
+```
+/smug
+```
+
+This command doesn't require targeting anyone - it simply shows your smug face to the channel.
+
+**Example:**
+```
+/smug
+```
+
+Displays:
+> **YourName** *smugs...*
+
+## How it works
+
+When you use a roleplay command:
+
+1. Yato validates the command (checking if you can target yourself)
+2. Fetches a random anime GIF from waifu.pics or nekos.life
+3. Creates an embed with:
+   - Your interaction message
+   - The animated GIF
+   - Optional reason if provided
+4. Posts it to the channel for everyone to see
+
+<Tabs>
+  <Tab title="Targeting others">
+    ```
+    /hug user:@Alice reason:you're amazing
+    ```
+    
+    **Result:**
+    - Message: "**Bob** *hugs* @Alice, you're amazing"
+    - Displays: Random hug GIF
+  </Tab>
+  <Tab title="Self-targeting">
+    Some commands like `blush` and `cry` work differently when used alone:
+    
+    ```
+    /blush
+    ```
+    
+    **Result:**
+    - Message: "@Bob is **Blushing**! ..."
+    - Displays: Random blush GIF
+  </Tab>
+  <Tab title="No target needed">
+    Commands like `smug` don't need a target:
+    
+    ```
+    /smug
+    ```
+    
+    **Result:**
+    - Message: "**Bob** *smugs...*"
+    - Displays: Random smug GIF
+  </Tab>
+</Tabs>
+
+## Image sources
+
+Yato uses two reliable anime image APIs:
+
+- **waifu.pics** - Primary source for most commands
+- **nekos.life** - Backup source for additional variety
+
+Some commands randomly select between both APIs to provide diverse GIF content.
+
+## Limitations and errors
+
+### "You're so lonely!"
+
+This message appears when you try to use interactive commands (hug, kiss, pat, bite, lick) on yourself. These commands require targeting another user.
+
+### "Just why?"
+
+This specific message appears when you try to slap yourself.
+
+### API errors
+
+If the image APIs are unavailable, Yato will display:
+> Something went wrong, please try again later or join our Support Server to report this problem
+
+<Note>
+  If you encounter persistent API errors, wait a few moments and try again. The services are generally reliable but may occasionally experience brief outages.
+</Note>
+
+## Community engagement
+
+Roleplay commands are great for:
+
+- **Building community**: Create fun, memorable interactions
+- **Server events**: Use during celebrations or special occasions
+- **Icebreakers**: Help new members feel welcome
+- **Entertainment**: Add personality to conversations
+
+## Tips for server admins
+
+While roleplay commands are fun, consider:
+
+- Setting up dedicated channels for roleplay to avoid spam
+- Establishing server rules about appropriate use
+- Monitoring usage to ensure commands aren't being misused
+- Encouraging positive interactions that build community
+
+These commands require no special permissions and are available to all server members by default.

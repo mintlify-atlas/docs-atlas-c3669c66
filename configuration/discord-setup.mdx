@@ -1,0 +1,390 @@
+---
+title: Discord bot setup
+description: Create and configure your Discord bot application with proper intents, permissions, and OAuth2 settings
+---
+
+Before running Yato, you need to create a Discord bot application and configure it with the necessary permissions and intents.
+
+## Creating the bot application
+
+<Steps>
+  <Step title="Access Discord Developer Portal">
+    1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+    2. Log in with your Discord account
+    3. Click "New Application" in the top right
+    4. Enter a name for your application (e.g., "Yato Bot")
+    5. Click "Create"
+  </Step>
+  
+  <Step title="Configure general information">
+    1. On the "General Information" tab, you can:
+       - Add an app icon
+       - Write a description
+       - Add tags
+    2. Copy your **Application ID** (also called Client ID) and save it as `CLIENT_ID` in your `.env` file
+    
+    <Info>
+      The Application ID is used for generating invite links and OAuth2 authorization.
+    </Info>
+  </Step>
+  
+  <Step title="Create the bot user">
+    1. Click on the "Bot" tab in the left sidebar
+    2. Click "Add Bot"
+    3. Click "Yes, do it!" to confirm
+    4. Customize your bot:
+       - Set a username
+       - Upload a bot avatar
+       - Disable "Public Bot" if you want only you to invite it
+  </Step>
+  
+  <Step title="Get your bot token">
+    1. Under the "TOKEN" section, click "Reset Token"
+    2. Click "Yes, do it!" to confirm
+    3. Click "Copy" to copy the token
+    4. Save this token as `TOKEN` in your `.env` file
+    
+    <Warning>
+      Your bot token is sensitive information. Never share it publicly or commit it to version control. If compromised, regenerate it immediately.
+    </Warning>
+  </Step>
+</Steps>
+
+## Configuring bot intents
+
+Intents define which events your bot receives from Discord. Yato requires specific intents to function properly.
+
+### What are intents?
+
+Intents control which gateway events Discord sends to your bot. They help Discord scale by reducing unnecessary events sent to bots.
+
+### Required intents for Yato
+
+<Note>
+  Yato was built with discord.js v12, which has different intent requirements than modern versions. The bot currently uses basic client configuration without explicit intents.
+</Note>
+
+In the Discord Developer Portal, under the "Bot" tab, enable these **Privileged Gateway Intents**:
+
+<Steps>
+  <Step title="Server Members Intent">
+    Enable **SERVER MEMBERS INTENT** (Privileged)
+    
+    Required for:
+    - Detecting when members join/leave servers
+    - Fetching member information for commands
+    - Welcome messages and member tracking
+    - User info commands
+  </Step>
+  
+  <Step title="Message Content Intent">
+    Enable **MESSAGE CONTENT INTENT** (Privileged)
+    
+    Required for:
+    - Reading message content for legacy prefix commands
+    - Message-based command handling
+    - Content moderation features
+    
+    <Warning>
+      As of September 2022, this is a privileged intent required for bots to read message content. Without it, message content will appear empty for non-slash commands.
+    </Warning>
+  </Step>
+  
+  <Step title="Presence Intent (Optional)">
+    Enable **PRESENCE INTENT** (Privileged) if you want:
+    - Member status tracking (online, idle, etc.)
+    - Custom status information
+    - Activity tracking
+    
+    <Info>
+      This is optional for Yato's core functionality but may be required for certain features.
+    </Info>
+  </Step>
+</Steps>
+
+### Current implementation
+
+Yato's current client initialization (`src/index.js:7`):
+
+```javascript
+const client = new Discord.Client({ 
+  allowedMentions: { parse: ['users', 'roles'] } 
+});
+```
+
+<Note>
+  For modern Discord.js versions (v13+), you should explicitly specify intents:
+  
+  ```javascript
+  const { Client, GatewayIntentBits } = require('discord.js');
+  
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent
+    ],
+    allowedMentions: { parse: ['users', 'roles'] }
+  });
+  ```
+</Note>
+
+## Bot permissions
+
+Yato requires specific Discord permissions to function properly.
+
+### Permission calculator
+
+The bot uses permission value `1879436407` for its invite link (`src/commands/information/botinfo.js:35`).
+
+This includes:
+
+| Permission | Description |
+|------------|-------------|
+| **View Channels** | See channels to interact in |
+| **Send Messages** | Send messages in text channels |
+| **Embed Links** | Send rich embeds with images and formatting |
+| **Attach Files** | Upload images and files |
+| **Read Message History** | Read previous messages in channels |
+| **Add Reactions** | Add emoji reactions to messages |
+| **Use External Emojis** | Use emojis from other servers |
+| **Mention @everyone, @here, and All Roles** | Mention mass groups (use carefully) |
+| **Manage Messages** | Delete messages (for moderation) |
+| **Manage Roles** | Create, edit, and assign roles |
+| **Kick Members** | Kick members from the server |
+| **Ban Members** | Ban members from the server |
+| **Manage Channels** | Create, edit, and delete channels |
+| **Use Slash Commands** | Use application commands |
+
+### Required permissions
+
+Minimum permissions for basic functionality:
+
+- **View Channels**
+- **Send Messages**
+- **Embed Links**
+- **Read Message History**
+- **Use Slash Commands**
+
+### Recommended permissions
+
+For full functionality (moderation, role management, etc.):
+
+- All basic permissions
+- **Manage Messages** (for purge/moderation)
+- **Kick Members** (for kick command)
+- **Ban Members** (for ban command)
+- **Manage Roles** (for role management)
+- **Attach Files** (for Canvas-generated images)
+- **Add Reactions** (for interactive commands)
+
+## Generating invite links
+
+### Using Discord Developer Portal
+
+<Steps>
+  <Step title="Navigate to OAuth2">
+    1. In the Discord Developer Portal, select your application
+    2. Click "OAuth2" in the left sidebar
+    3. Click "URL Generator"
+  </Step>
+  
+  <Step title="Select scopes">
+    Under "SCOPES", select:
+    - ✅ `bot`
+    - ✅ `applications.commands`
+  </Step>
+  
+  <Step title="Select permissions">
+    Under "BOT PERMISSIONS", select the permissions your bot needs.
+    
+    For Yato, you can use the permission integer `1879436407` or select permissions individually.
+  </Step>
+  
+  <Step title="Copy and use invite URL">
+    1. Copy the generated URL at the bottom
+    2. Paste it in your browser
+    3. Select a server to add the bot to
+    4. Click "Authorize"
+  </Step>
+</Steps>
+
+### Manual invite URL
+
+You can also construct the invite URL manually:
+
+```
+https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=1879436407&scope=bot%20applications.commands
+```
+
+Replace `YOUR_CLIENT_ID` with your Application ID.
+
+<CodeGroup>
+```text Full permissions (1879436407)
+https://discord.com/api/oauth2/authorize?client_id=123456789012345678&permissions=1879436407&scope=bot%20applications.commands
+```
+
+```text Basic permissions (274878024768)
+https://discord.com/api/oauth2/authorize?client_id=123456789012345678&permissions=274878024768&scope=bot%20applications.commands
+```
+
+```text Administrator (not recommended)
+https://discord.com/api/oauth2/authorize?client_id=123456789012345678&permissions=8&scope=bot%20applications.commands
+```
+</CodeGroup>
+
+<Warning>
+  Avoid using Administrator permission in production. Only grant the specific permissions your bot needs.
+</Warning>
+
+## Slash commands setup
+
+Yato uses the `gcommands` library for slash command handling.
+
+### Automatic registration
+
+Slash commands are automatically registered when the bot starts, configured in `src/index.js:15-25`:
+
+```javascript
+const GCommandsClient = new GCommands(client, {
+  cmdDir: 'src/commands/',
+  language: 'english',
+  ownLanguageFile: require('./config/message.json'),
+  unkownCommandMessage: true,
+  slash: {
+    slash: 'both',
+    prefix: `^<@!?${client.user.id}> `
+  },
+  defaultCooldown: '3s'
+});
+```
+
+### Configuration options
+
+- **cmdDir**: Directory containing command files
+- **slash**: `'both'` enables both slash commands and mention-based commands
+- **prefix**: Regex pattern allowing commands via bot mentions
+- **defaultCooldown**: Prevents command spam (3 seconds between uses)
+
+### Development vs. Production
+
+<Info>
+  **Development**: Use `GUILD_ID` in `.env` to register commands to a specific server (instant updates)
+  
+  **Production**: Omit `GUILD_ID` to register commands globally (updates take up to 1 hour but work in all servers)
+</Info>
+
+## Testing your bot
+
+<Steps>
+  <Step title="Invite bot to test server">
+    Use your invite link to add the bot to a test Discord server where you have admin permissions.
+  </Step>
+  
+  <Step title="Start the bot">
+    Run the bot locally:
+    
+    ```bash
+    npm run dev
+    # or
+    node src/index.js
+    ```
+    
+    You should see:
+    ```
+    ➤ Logged in as YourBot#1234 (123456789012345678)
+    ✔ Connected to MongoDB
+    ```
+  </Step>
+  
+  <Step title="Test slash commands">
+    In Discord, type `/` in any channel where the bot has access. You should see Yato's commands in the autocomplete menu.
+    
+    Try:
+    - `/help` - View available commands
+    - `/botinfo` - View bot information
+    - `/ping` - Test bot responsiveness
+  </Step>
+  
+  <Step title="Test mention commands">
+    You can also use commands by mentioning the bot:
+    
+    ```
+    @YourBot help
+    ```
+  </Step>
+</Steps>
+
+## Common issues
+
+### Bot appears offline
+
+**Possible causes**:
+- Invalid or expired token
+- Bot not invited to server
+- Network/firewall blocking Discord connections
+
+**Solutions**:
+- Verify `TOKEN` in `.env` is correct
+- Regenerate token in Developer Portal if needed
+- Check bot is in the server's member list
+- Ensure no firewall blocks Discord's gateway
+
+### Slash commands not appearing
+
+**Possible causes**:
+- Bot missing `applications.commands` scope
+- Commands not yet registered globally
+- Bot lacks necessary permissions
+
+**Solutions**:
+- Re-invite bot with `applications.commands` scope
+- For development, add `GUILD_ID` to `.env` for instant registration
+- Wait up to 1 hour for global command registration
+- Ensure bot has "Use Slash Commands" permission
+
+### Bot can't read messages
+
+**Possible causes**:
+- Missing Message Content intent
+- Missing "View Channel" or "Read Message History" permissions
+
+**Solutions**:
+- Enable Message Content Intent in Developer Portal
+- Grant "View Channels" and "Read Message History" permissions
+- Re-invite bot with updated permissions
+
+### Permission errors
+
+**Error**: `Missing Permissions`
+
+**Solutions**:
+- Ensure bot's role is high enough in the role hierarchy
+- Grant specific permissions in channel or server settings
+- Re-invite bot with correct permission integer
+- Check bot isn't trying to moderate members with higher roles
+
+## Security best practices
+
+<Warning>
+  Follow these security guidelines:
+</Warning>
+
+- **Never share your bot token**: Treat it like a password
+- **Use minimal permissions**: Only grant what's necessary
+- **Restrict bot access**: Use channel permissions to limit bot visibility
+- **Implement rate limiting**: GCommands includes cooldown protection
+- **Validate user input**: Sanitize user-provided data (especially for Canvas rendering)
+- **Monitor bot activity**: Review logs for suspicious behavior
+- **Keep dependencies updated**: Regularly update discord.js and other libraries
+- **Disable public bot**: If for personal use, disable "Public Bot" setting
+
+## Next steps
+
+Now that your Discord bot is set up:
+
+1. Configure your [environment variables](/configuration/environment)
+2. Set up [MongoDB](/configuration/mongodb) for data persistence
+3. Deploy your bot to a hosting service
+4. Explore available commands and features

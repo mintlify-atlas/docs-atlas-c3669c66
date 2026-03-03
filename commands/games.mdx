@@ -1,0 +1,308 @@
+---
+title: Game commands
+description: Check game server status and start Discord activities
+---
+
+Game commands allow you to check the status of various game servers and start Discord's built-in activities in voice channels.
+
+## Counter-Strike: Source server
+
+Check the status of Counter-Strike: Source servers.
+
+### Syntax
+
+<Tabs>
+  <Tab title="By IP address">
+    ```bash
+    /css ip:<ip_address>[:port]
+    ```
+  </Tab>
+
+  <Tab title="By saved server">
+    ```bash
+    /css server:<server_name>
+    ```
+  </Tab>
+</Tabs>
+
+### Parameters
+
+<ParamField path="ip" type="String">
+  Server IP address with optional port (defaults to 27015 if not specified)
+</ParamField>
+
+<ParamField path="server" type="Choice">
+  Select from a list of pre-configured CS:S servers
+</ParamField>
+
+### Examples
+
+<CodeGroup>
+```bash Using IP address
+/css ip:192.168.1.1:27015
+```
+
+```bash Using default port
+/css ip:192.168.1.1
+```
+
+```bash Using saved server
+/css server:MyFavoriteServer
+```
+</CodeGroup>
+
+### Displayed information
+
+- Server name
+- Current map
+- Player count (including bot count)
+- Server address with clickable ClientMod link
+- Visibility (Public or Password Protected)
+- Server type (Dedicated, Non-Dedicated, or Source TV)
+- GameTracker link for detailed stats
+- Player list with scores (for saved servers when players are online)
+
+<Note>
+  The ClientMod link (`clientmod://connect/...`) only works if you have ClientMod installed for CS:S.
+</Note>
+
+### Requirements
+
+- Server must be running Counter-Strike: Source (App ID 240)
+- Server must be online and accessible
+- Port defaults to 27015 if not specified
+
+---
+
+## Minecraft server
+
+Check the status of Minecraft servers.
+
+### Syntax
+
+```bash
+/minecraft ip:<server_ip>[:port]
+```
+
+### Parameters
+
+<ParamField path="ip" type="String" required>
+  Minecraft server IP address with optional port (defaults to 25565)
+</ParamField>
+
+### Examples
+
+<CodeGroup>
+```bash Using full address
+/minecraft ip:play.hypixel.net
+```
+
+```bash With custom port
+/minecraft ip:mc.server.com:25566
+```
+
+```bash With IP address
+/minecraft ip:192.168.1.1
+```
+</CodeGroup>
+
+### Displayed information
+
+- Server MOTD (Message of the Day)
+- Online status
+- Current player count / Maximum players
+- Server address
+- Software type (if available)
+- Minecraft version
+- Server favicon
+- Server banner image
+
+<Note>
+  The MOTD is automatically cleaned of Minecraft color codes for better readability in Discord.
+</Note>
+
+### Troubleshooting
+
+<Warning>
+  If the command shows "Unable to connect to the Server":
+  - Verify the server IP address is correct
+  - Check if the server is online
+  - Ensure the port is correct (default: 25565)
+  - Some servers may have query disabled
+</Warning>
+
+---
+
+## Discord activities
+
+Start Discord's built-in activities in voice channels.
+
+### Syntax
+
+```bash
+/activities voicechannel:<channel> activity:<activity_name>
+```
+
+### Parameters
+
+<ParamField path="voicechannel" type="Channel" required>
+  The voice channel where you want to start the activity
+</ParamField>
+
+<ParamField path="activity" type="Choice" required>
+  Choose from available Discord activities:
+  - YouTube Together
+  - Poker Night (Up to 7 participants)
+  - Fishington.io
+  - Betrayal.io (Up to 12 participants)
+</ParamField>
+
+### Required permissions
+
+<CardGroup cols={2}>
+  <Card title="User permission" icon="user">
+    `CREATE_INSTANT_INVITE`
+  </Card>
+  <Card title="Bot permission" icon="robot">
+    `CREATE_INSTANT_INVITE` in the selected voice channel
+  </Card>
+</CardGroup>
+
+### Cooldown
+
+**10 seconds**
+
+### Examples
+
+<CodeGroup>
+```bash YouTube Together
+/activities voicechannel:#Voice activity:"YouTube Together"
+```
+
+```bash Poker Night
+/activities voicechannel:#Gaming activity:"Poker Night"
+```
+
+```bash Fishington.io
+/activities voicechannel:#Fun activity:"Fishington.io"
+```
+
+```bash Betrayal.io
+/activities voicechannel:#Party activity:"Betrayal.io"
+```
+</CodeGroup>
+
+### How it works
+
+1. Select a voice channel from your server
+2. Choose an activity from the dropdown
+3. Yato creates a special invite link for the activity
+4. Click the "Join" button to start the activity
+5. The invite link is valid for 24 hours
+
+### Activity descriptions
+
+<AccordionGroup>
+  <Accordion title="YouTube Together">
+    Watch YouTube videos together in a voice channel. Perfect for:
+    - Watch parties
+    - Sharing music
+    - Group entertainment
+    
+    **Unlimited participants**
+  </Accordion>
+
+  <Accordion title="Poker Night">
+    Play Texas Hold'em poker with your friends.
+    
+    **Up to 7 participants**
+  </Accordion>
+
+  <Accordion title="Fishington.io">
+    Casual fishing game where you compete to catch the biggest fish.
+    
+    **Multiple participants**
+  </Accordion>
+
+  <Accordion title="Betrayal.io">
+    Social deduction game similar to Among Us.
+    
+    **Up to 12 participants**
+  </Accordion>
+</AccordionGroup>
+
+### Notes
+
+<Note>
+  - Activities are a Discord BETA feature
+  - You must select a voice channel (not a text channel)
+  - The invite link expires after 24 hours
+  - Participants need to click the invite link to join the activity
+</Note>
+
+---
+
+## Edit CSS server (Admin only)
+
+Add or edit saved CS:S server configurations in the database.
+
+### Syntax
+
+```bash
+/editcssserver cmd:<command> ip:<server_ip> name:<server_name>
+```
+
+### Parameters
+
+<ParamField path="cmd" type="String" required>
+  Server command/identifier for the database
+</ParamField>
+
+<ParamField path="ip" type="String" required>
+  Server IP address with port
+</ParamField>
+
+<ParamField path="name" type="String" required>
+  Display name for the server
+</ParamField>
+
+### Restrictions
+
+<Warning>
+  This command is restricted to:
+  - Specific guild: `674567417434996736`
+  - Specific users: `442525125192187905`, `625415951906635789`
+</Warning>
+
+### Example
+
+```bash
+/editcssserver cmd:myserver ip:192.168.1.1:27015 name:"My Awesome Server"
+```
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Server queries">
+    - Double-check IP addresses and ports before running commands
+    - Some game servers may have query disabled for security
+    - Server status reflects real-time data and may change quickly
+  </Accordion>
+
+  <Accordion title="Discord activities">
+    - Make sure you have permission to create invites in the voice channel
+    - Yato needs the `CREATE_INSTANT_INVITE` permission in that channel
+    - Activities work best with stable internet connections
+    - Some activities have participant limits
+  </Accordion>
+
+  <Accordion title="Saved servers">
+    - Server administrators can pre-configure frequently-used servers
+    - Saved servers show additional information like player lists
+    - Contact bot administrators to add servers to the saved list
+  </Accordion>
+</AccordionGroup>
+
+For issues or questions, join the [Yato Support Server](https://discord.gg/mm7Ke8T).

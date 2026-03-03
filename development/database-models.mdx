@@ -1,0 +1,467 @@
+---
+title: Database models
+description: MongoDB schemas and models used in Yato for data persistence
+---
+
+Yato uses MongoDB with Mongoose for data persistence. Models are defined in `src/models/` and provide schema validation and database operations.
+
+## Database connection
+
+The MongoDB connection is established in the ready event at `src/index.js:11`:
+
+```js src/index.js
+const mongoose = require('mongoose');
+
+client.on('ready', async () => {
+  await mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+    .then(() => console.log('✔ Connected to MongoDB'))
+    .catch(err => console.log(`✖ Failed to connect to MongoDB\n${err}`));
+});
+```
+
+<Info>
+  The connection string is stored in the `.env` file as `MONGO_URI`.
+</Info>
+
+## Existing models
+
+Yato currently has two database models:
+
+### User model
+
+Stores user profiles with AniList integration:
+
+```js src/models/user.js
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  id: {
+    type: String,
+    required: true
+  },
+  aniProfile: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true
+  }
+});
+
+module.exports = mongoose.model('user', userSchema, 'user');
+```
+
+**Fields:**
+- `name` - Discord username
+- `id` - Discord user ID
+- `aniProfile` - AniList profile data (flexible schema)
+
+### CSS model
+
+Stores Counter-Strike server configurations:
+
+```js src/models/css.js
+const mongoose = require('mongoose');
+
+const cssSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  cmd: {
+    type: String,
+    required: true
+  },
+  ip: {
+    type: String,
+    required: true
+  }
+});
+
+module.exports = mongoose.model('css', cssSchema, 'css');
+```
+
+**Fields:**
+- `name` - Server name or identifier
+- `cmd` - Command associated with this server
+- `ip` - Server IP address and port
+
+## Creating a new model
+
+<Steps>
+  <Step title="Create the model file">
+    Create a new file in `src/models/`:
+    
+    ```bash
+    touch src/models/guild.js
+    ```
+  </Step>
+  
+  <Step title="Define the schema">
+    ```js src/models/guild.js
+    const mongoose = require('mongoose');
+    
+    const guildSchema = new mongoose.Schema({
+      guildId: {
+        type: String,
+        required: true,
+        unique: true
+      },
+      prefix: {
+        type: String,
+        default: '!'
+      },
+      welcomeChannel: {
+        type: String,
+        default: null
+      },
+      logChannel: {
+        type: String,
+        default: null
+      },
+      muteRole: {
+        type: String,
+        default: null
+      },
+      modRoles: {
+        type: [String],
+        default: []
+      }
+    }, {
+      timestamps: true // Adds createdAt and updatedAt
+    });
+    
+    module.exports = mongoose.model('guild', guildSchema, 'guilds');
+    ```
+  </Step>
+  
+  <Step title="Use the model in commands">
+    ```js src/commands/utilities/setprefix.js
+    const Guild = require('../../models/guild');
+    
+    module.exports = {
+      name: 'setprefix',
+      description: 'Set server prefix',
+      userRequiredPermissions: 'MANAGE_GUILD',
+      expectedArgs: '<prefix:3:New prefix>',
+      run: async ({ guild, respond }, arrayArgs, args) => {
+        // Find or create guild document
+        let guildDoc = await Guild.findOne({ guildId: guild.id });
+        
+        if (!guildDoc) {
+          guildDoc = new Guild({ guildId: guild.id });
+        }
+        
+        // Update prefix
+        guildDoc.prefix = args.prefix;
+        await guildDoc.save();
+        
+        respond(`Prefix updated to \`${args.prefix}\``);
+      }
+    };
+    ```
+  </Step>
+</Steps>
+
+## Schema types
+
+Mongoose supports various schema types:
+
+<CodeGroup>
+```js Basic types
+{
+  stringField: String,
+  numberField: Number,
+  booleanField: Boolean,
+  dateField: Date,
+  bufferField: Buffer,
+  objectIdField: mongoose.Schema.Types.ObjectId
+}
+```
+
+```js Arrays
+{
+  stringArray: [String],
+  numberArray: [Number],
+  mixedArray: [mongoose.Schema.Types.Mixed]
+}
+```
+
+```js Nested objects
+{
+  settings: {
+    enabled: Boolean,
+    threshold: Number,
+    channels: [String]
+  }
+}
+```
+
+```js Mixed type
+{
+  // Flexible schema - accepts any structure
+  metadata: mongoose.Schema.Types.Mixed
+}
+```
+</CodeGroup>
+
+## Field options
+
+Configure fields with validation and defaults:
+
+| Option | Description | Example |
+|--------|-------------|----------|
+| `type` | Data type | `String`, `Number`, etc. |
+| `required` | Must have a value | `required: true` |
+| `unique` | Must be unique | `unique: true` |
+| `default` | Default value | `default: 0` |
+| `min` | Minimum value (numbers) | `min: 0` |
+| `max` | Maximum value (numbers) | `max: 100` |
+| `minlength` | Minimum length (strings) | `minlength: 3` |
+| `maxlength` | Maximum length (strings) | `maxlength: 32` |
+| `enum` | Allowed values | `enum: ['option1', 'option2']` |
+| `validate` | Custom validator | `validate: (v) => v.length > 0` |
+
+## Common operations
+
+### Create a document
+
+<CodeGroup>
+```js Method 1: new + save
+const User = require('./models/user');
+
+const newUser = new User({
+  name: 'John Doe',
+  id: '123456789',
+  aniProfile: { username: 'johndoe' }
+});
+
+await newUser.save();
+```
+
+```js Method 2: create
+const User = require('./models/user');
+
+const newUser = await User.create({
+  name: 'John Doe',
+  id: '123456789',
+  aniProfile: { username: 'johndoe' }
+});
+```
+</CodeGroup>
+
+### Find documents
+
+<CodeGroup>
+```js Find one
+const user = await User.findOne({ id: '123456789' });
+
+if (!user) {
+  console.log('User not found');
+}
+```
+
+```js Find by ID
+const user = await User.findById(documentId);
+```
+
+```js Find many
+const users = await User.find({ name: /john/i });
+```
+
+```js With conditions
+const users = await User.find({
+  name: { $regex: /john/i },
+  createdAt: { $gte: new Date('2024-01-01') }
+}).limit(10).sort({ createdAt: -1 });
+```
+</CodeGroup>
+
+### Update documents
+
+<CodeGroup>
+```js Update one
+await User.updateOne(
+  { id: '123456789' },
+  { $set: { name: 'Jane Doe' } }
+);
+```
+
+```js Find and update
+const user = await User.findOneAndUpdate(
+  { id: '123456789' },
+  { $set: { name: 'Jane Doe' } },
+  { new: true } // Return updated document
+);
+```
+
+```js Update or create
+const user = await User.findOneAndUpdate(
+  { id: '123456789' },
+  { $set: { name: 'Jane Doe' } },
+  { upsert: true, new: true }
+);
+```
+</CodeGroup>
+
+### Delete documents
+
+<CodeGroup>
+```js Delete one
+await User.deleteOne({ id: '123456789' });
+```
+
+```js Delete many
+await User.deleteMany({ createdAt: { $lt: oldDate } });
+```
+
+```js Find and delete
+const deletedUser = await User.findOneAndDelete({ id: '123456789' });
+```
+</CodeGroup>
+
+## Example: Complete model with methods
+
+Add custom methods to your schemas:
+
+```js src/models/guild.js
+const mongoose = require('mongoose');
+
+const guildSchema = new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  prefix: {
+    type: String,
+    default: '!'
+  },
+  warnings: {
+    type: Map,
+    of: [{
+      reason: String,
+      moderator: String,
+      timestamp: Date
+    }],
+    default: new Map()
+  }
+});
+
+// Instance method
+guildSchema.methods.addWarning = function(userId, reason, moderatorId) {
+  const warnings = this.warnings.get(userId) || [];
+  warnings.push({
+    reason,
+    moderator: moderatorId,
+    timestamp: new Date()
+  });
+  this.warnings.set(userId, warnings);
+  return this.save();
+};
+
+// Static method
+guildSchema.statics.findByGuildId = function(guildId) {
+  return this.findOne({ guildId });
+};
+
+module.exports = mongoose.model('guild', guildSchema, 'guilds');
+```
+
+Usage:
+
+```js
+const Guild = require('./models/guild');
+
+// Static method
+const guild = await Guild.findByGuildId('123456789');
+
+// Instance method
+await guild.addWarning('userId', 'Spam', 'modId');
+```
+
+## Mongoose version notes
+
+<Warning>
+  Yato uses Mongoose v5.12.12, which is outdated. Some options like `useNewUrlParser` and `useUnifiedTopology` are deprecated in Mongoose 6+.
+</Warning>
+
+When upgrading Mongoose, update the connection:
+
+```js
+// Old (v5)
+await mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+// New (v6+)
+await mongoose.connect(process.env.MONGO_URI);
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use indexes for frequently queried fields" icon="magnifying-glass">
+    ```js
+    const userSchema = new mongoose.Schema({
+      id: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true // Creates index
+      }
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Validate data before saving" icon="shield-check">
+    ```js
+    const guildSchema = new mongoose.Schema({
+      prefix: {
+        type: String,
+        required: true,
+        minlength: 1,
+        maxlength: 5,
+        validate: {
+          validator: (v) => !/\s/.test(v),
+          message: 'Prefix cannot contain spaces'
+        }
+      }
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Use timestamps" icon="clock">
+    ```js
+    const schema = new mongoose.Schema({
+      // fields...
+    }, {
+      timestamps: true // Adds createdAt and updatedAt
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Handle errors properly" icon="circle-exclamation">
+    ```js
+    try {
+      const user = await User.create(userData);
+    } catch (error) {
+      if (error.code === 11000) {
+        // Duplicate key error
+        console.log('User already exists');
+      } else {
+        console.error('Database error:', error);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Use MongoDB Compass or a similar tool to visualize and query your database during development.
+</Tip>

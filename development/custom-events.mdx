@@ -1,0 +1,373 @@
+---
+title: Custom event handlers
+description: How to add custom Discord event listeners and gcommands event handlers
+---
+
+Yato uses Discord.js events for bot lifecycle and gcommands events for command-related functionality. This guide shows you how to add custom event handlers.
+
+## Discord.js events
+
+The Discord.js client emits events for various Discord activities. These are handled directly on the client instance.
+
+### Available in Yato
+
+Currently, Yato implements the `ready` event in `src/index.js:9`:
+
+```js src/index.js
+const Discord = require('discord.js');
+const client = new Discord.Client({ 
+  allowedMentions: { parse: ['users', 'roles'] } 
+});
+
+client.on('ready', async () => {
+  console.log(`➤ Logged in as ${client.user.tag} (${client.user.id})`);
+  
+  // MongoDB connection
+  await mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+  
+  // Initialize gcommands
+  const GCommandsClient = new GCommands(client, { /* ... */ });
+  
+  // Set status rotation
+  setInterval(() => {
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    client.user.setPresence({ 
+      activity: { name: status, type: 'LISTENING' }, 
+      status: 'idle' 
+    });
+  }, 15000);
+});
+```
+
+### Adding new Discord events
+
+You can add event handlers directly in `src/index.js` or create separate event files.
+
+<Tabs>
+  <Tab title="In index.js">
+    Add event handlers directly after the client creation:
+    
+    ```js src/index.js
+    const client = new Discord.Client({ 
+      allowedMentions: { parse: ['users', 'roles'] } 
+    });
+    
+    // Add new event handler
+    client.on('guildMemberAdd', (member) => {
+      console.log(`${member.user.tag} joined ${member.guild.name}`);
+      
+      // Send welcome message
+      const welcomeChannel = member.guild.channels.cache
+        .find(ch => ch.name === 'welcome');
+      
+      if (welcomeChannel) {
+        welcomeChannel.send(`Welcome ${member}!`);
+      }
+    });
+    
+    client.on('ready', async () => {
+      // Existing ready logic...
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Separate files">
+    Create an events directory structure:
+    
+    ```bash
+    mkdir src/events
+    touch src/events/guildMemberAdd.js
+    touch src/events/messageDelete.js
+    ```
+    
+    Define event handlers in separate files:
+    
+    ```js src/events/guildMemberAdd.js
+    const { MessageEmbed } = require('discord.js');
+    const colors = require('../config/colors.json');
+    
+    module.exports = {
+      name: 'guildMemberAdd',
+      once: false,
+      execute(member) {
+        const welcomeChannel = member.guild.channels.cache
+          .find(ch => ch.name === 'welcome');
+        
+        if (!welcomeChannel) return;
+        
+        const embed = new MessageEmbed()
+          .setColor(colors.default)
+          .setTitle('Welcome!')
+          .setDescription(`Welcome to ${member.guild.name}, ${member}!`)
+          .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+          .setTimestamp();
+        
+        welcomeChannel.send(embed);
+      }
+    };
+    ```
+    
+    Load event files in `src/index.js`:
+    
+    ```js src/index.js
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Load event files
+    const eventFiles = fs.readdirSync('./src/events')
+      .filter(file => file.endsWith('.js'));
+    
+    for (const file of eventFiles) {
+      const event = require(`./events/${file}`);
+      if (event.once) {
+        client.once(event.name, (...args) => event.execute(...args));
+      } else {
+        client.on(event.name, (...args) => event.execute(...args));
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Common Discord events
+
+Here are commonly used Discord.js events you can implement:
+
+<AccordionGroup>
+  <Accordion title="guildMemberAdd" icon="user-plus">
+    Fired when a user joins a server.
+    
+    ```js
+    client.on('guildMemberAdd', (member) => {
+      // member is a GuildMember object
+      console.log(`${member.user.tag} joined`);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="guildMemberRemove" icon="user-minus">
+    Fired when a user leaves or is kicked/banned.
+    
+    ```js
+    client.on('guildMemberRemove', (member) => {
+      console.log(`${member.user.tag} left`);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="messageDelete" icon="trash">
+    Fired when a message is deleted.
+    
+    ```js
+    client.on('messageDelete', (message) => {
+      if (message.partial) return; // Ignore cached messages
+      console.log(`Message deleted: ${message.content}`);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="messageUpdate" icon="pen-to-square">
+    Fired when a message is edited.
+    
+    ```js
+    client.on('messageUpdate', (oldMessage, newMessage) => {
+      if (oldMessage.content === newMessage.content) return;
+      console.log(`Message edited from "${oldMessage.content}" to "${newMessage.content}"`);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="guildCreate" icon="plus">
+    Fired when the bot joins a new server.
+    
+    ```js
+    client.on('guildCreate', (guild) => {
+      console.log(`Joined new guild: ${guild.name}`);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="error" icon="triangle-exclamation">
+    Fired when the client encounters an error.
+    
+    ```js
+    client.on('error', (error) => {
+      console.error('Client error:', error);
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## gcommands events
+
+The gcommands framework provides its own events for command handling. These are implemented in `src/index.js:27`:
+
+```js src/index.js
+const GCommandsClient = new GCommands(client, { /* config */ });
+
+GCommandsClient.on('log', (log) => {
+  console.log(log);
+});
+
+GCommandsClient.on('debug', (debug) => {
+  console.log(debug);
+});
+```
+
+### Available gcommands events
+
+<CardGroup cols={2}>
+  <Card title="log" icon="file-lines">
+    General logging information from the framework.
+  </Card>
+  
+  <Card title="debug" icon="bug">
+    Debug information for troubleshooting.
+  </Card>
+  
+  <Card title="commandError" icon="circle-exclamation">
+    Fired when a command throws an error.
+  </Card>
+  
+  <Card title="cooldown" icon="clock">
+    Fired when a user is on cooldown.
+  </Card>
+</CardGroup>
+
+### Error handling
+
+Add custom error handling for commands:
+
+```js src/index.js
+const { MessageEmbed } = require('discord.js');
+const colors = require('./config/colors.json');
+
+GCommandsClient.on('commandError', (ctx, error) => {
+  console.error(`Command error in ${ctx.command.name}:`, error);
+  
+  const embed = new MessageEmbed()
+    .setColor(colors.red)
+    .setTitle('Command Error')
+    .setDescription('An error occurred while executing this command.')
+    .addField('Error', error.message)
+    .setTimestamp();
+  
+  ctx.respond({ content: embed, ephemeral: true });
+});
+```
+
+### Cooldown messages
+
+Customize cooldown responses:
+
+```js src/index.js
+GCommandsClient.on('cooldown', (ctx, timeLeft) => {
+  const embed = new MessageEmbed()
+    .setColor(colors.red)
+    .setDescription(`Please wait ${Math.ceil(timeLeft / 1000)} seconds before using this command again.`);
+  
+  ctx.respond({ content: embed, ephemeral: true });
+});
+```
+
+## Example: Logging system
+
+Here's a complete logging system implementation:
+
+<Steps>
+  <Step title="Create the log channel finder">
+    ```js src/structures/utils.js
+    module.exports = {
+      // ... existing utilities
+      
+      getLogChannel(guild) {
+        return guild.channels.cache.find(ch => 
+          ch.name === 'yato-logs' || ch.name === 'logs'
+        );
+      }
+    };
+    ```
+  </Step>
+  
+  <Step title="Create event handlers">
+    ```js src/events/messageDelete.js
+    const { MessageEmbed } = require('discord.js');
+    const colors = require('../config/colors.json');
+    const utils = require('../structures/utils');
+    
+    module.exports = {
+      name: 'messageDelete',
+      execute(message) {
+        if (message.author.bot) return;
+        if (message.partial) return;
+        
+        const logChannel = utils.getLogChannel(message.guild);
+        if (!logChannel) return;
+        
+        const embed = new MessageEmbed()
+          .setColor(colors.red)
+          .setAuthor(message.author.tag, message.author.displayAvatarURL())
+          .setDescription(`Message deleted in ${message.channel}`)
+          .addField('Content', message.content || 'No content')
+          .setTimestamp();
+        
+        logChannel.send(embed);
+      }
+    };
+    ```
+  </Step>
+  
+  <Step title="Load events in index.js">
+    ```js src/index.js
+    const fs = require('fs');
+    
+    // After client creation
+    const eventFiles = fs.readdirSync('./src/events')
+      .filter(file => file.endsWith('.js'));
+    
+    for (const file of eventFiles) {
+      const event = require(`./events/${file}`);
+      client.on(event.name, (...args) => event.execute(...args, client));
+    }
+    ```
+  </Step>
+</Steps>
+
+## Best practices
+
+<Note>
+  - **Check for bots**: Many events should ignore bot users to prevent loops
+  - **Handle partials**: Check for partial data in events like messageDelete
+  - **Error handling**: Wrap event handlers in try-catch blocks
+  - **Rate limits**: Be careful with events that fire frequently (like messageCreate)
+  - **Permissions**: Check channel permissions before sending log messages
+</Note>
+
+## Event handler template
+
+Use this template for new event handlers:
+
+```js src/events/eventName.js
+const { MessageEmbed } = require('discord.js');
+const colors = require('../config/colors.json');
+
+module.exports = {
+  name: 'eventName',
+  once: false, // Set to true for one-time events like 'ready'
+  async execute(...args) {
+    try {
+      // Your event logic here
+      
+    } catch (error) {
+      console.error(`Error in ${this.name} event:`, error);
+    }
+  }
+};
+```
+
+<Warning>
+  Discord.js v12 has limited support for some newer Discord features. Consider upgrading to v14+ for full feature support.
+</Warning>

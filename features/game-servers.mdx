@@ -1,0 +1,333 @@
+---
+title: Game server status
+description: Check the status of Minecraft and Counter-Strike Source game servers
+---
+
+Yato can query game servers to check their status, player counts, and other real-time information. This feature supports Minecraft servers and Counter-Strike: Source servers using the gamedig library and specialized APIs.
+
+## Overview
+
+Game server status features let you monitor servers directly from Discord, making it easy to see if your favorite servers are online and how many players are active.
+
+<CardGroup cols={2}>
+  <Card title="Minecraft" icon="cube" href="#minecraft-servers">
+    Check Minecraft Java Edition servers
+  </Card>
+  <Card title="CS:S" icon="gun" href="#counter-strike-source">
+    Query Counter-Strike: Source servers
+  </Card>
+</CardGroup>
+
+## Minecraft servers
+
+Check the status of any Minecraft Java Edition server by providing its IP address.
+
+### Usage
+
+```
+/minecraft ip:<server_ip[:port]>
+```
+
+### Parameters
+
+- `ip` (required) - The Minecraft server IP address, optionally with port
+  - Format: `ip.address` or `ip.address:port`
+  - Default port: 25565 (standard Minecraft port)
+
+### Examples
+
+```
+/minecraft ip:mc.hypixel.net
+```
+
+```
+/minecraft ip:play.example.com:25566
+```
+
+```
+/minecraft ip:192.168.1.100:25565
+```
+
+<Info>
+  If you don't specify a port, Yato automatically uses the default Minecraft port (25565).
+</Info>
+
+### Server information displayed
+
+When a server is online, Yato displays:
+
+- **Server name** - Title of the embed
+- **MOTD** - Message of the Day (server description)
+- **Status** - Online indicator (🟢)
+- **Players** - Current players / Max players
+- **Address** - The IP address you queried
+- **Software** - Server software (if available, e.g., Spigot, Paper)
+- **Version** - Minecraft version (e.g., 1.19.2)
+- **Favicon** - Server icon/logo
+- **Banner** - Server status banner image
+
+### Example response
+
+<Tabs>
+  <Tab title="Online server">
+    ```
+    Minecraft Server
+    
+    Welcome to our awesome Minecraft server!
+    Join us for fun and adventure
+    
+    📡 Status: Online 🟢
+    🎮 Players: 42/100
+    🌍 Address: `play.example.com`
+    ⚙️ Software: Paper
+    🌐 Version: 1.19.4
+    ```
+    
+    Includes server favicon and banner image.
+  </Tab>
+  <Tab title="Offline server">
+    ```
+    ⚠️ Unable to connect to the Server (play.example.com)
+    ```
+    
+    The message is ephemeral (only visible to you) when a server is offline.
+  </Tab>
+</Tabs>
+
+### MOTD formatting
+
+Minecraft servers often use formatting codes in their MOTD. Yato automatically:
+- Strips Minecraft color codes (`§a`, `§l`, etc.)
+- Preserves the message content
+- Escapes Discord markdown to prevent formatting issues
+
+<Note>
+  This command works with Minecraft Java Edition servers only. Bedrock Edition servers use a different protocol and are not currently supported.
+</Note>
+
+## Counter-Strike: Source
+
+Query Counter-Strike: Source servers for detailed status information and player lists.
+
+### Usage
+
+```
+/css server:<preset_server>
+```
+
+```
+/css ip:<server_ip[:port]>
+```
+
+<Warning>
+  Do not use both `server` and `ip` parameters together. Choose one method:
+  - Select a preset server from the list, OR
+  - Enter a custom server IP address
+</Warning>
+
+### Parameters
+
+- `server` (optional) - Select from preset CS:S servers configured in the bot
+- `ip` (optional) - Enter any CS:S server IP address
+  - Format: `ip.address` or `ip.address:port`
+  - Default port: 27015 (standard Source engine port)
+
+### Examples
+
+<Tabs>
+  <Tab title="Preset server">
+    ```
+    /css server:Community Server #1
+    ```
+    
+    Selects from a dropdown menu of preconfigured servers.
+  </Tab>
+  <Tab title="Custom IP">
+    ```
+    /css ip:192.168.1.50:27015
+    ```
+    
+    Queries any CS:S server by IP address.
+  </Tab>
+  <Tab title="Default port">
+    ```
+    /css ip:css.example.com
+    ```
+    
+    Automatically uses port 27015 if not specified.
+  </Tab>
+</Tabs>
+
+### Server information displayed
+
+When a CS:S server is online, Yato displays:
+
+- **Server name** - Server title (clickable link to GameTracker)
+- **Join link** - Direct connection link for ClientMod users
+- **Map** - Current map being played
+- **Players** - Current players / Max players (bot count)
+- **Address** - Server IP and port
+- **Visibility** - Public or Password Protected
+- **Server type** - Dedicated, Non-Dedicated, or Source TV
+- **Player list** - Visual list of active players (when using preset servers)
+
+### Player list feature
+
+When querying preset servers with active players, Yato generates a custom image showing:
+- Player names
+- Scores
+- Time connected
+
+This provides a quick visual overview of who's playing.
+
+<Info>
+  The player list image is only generated when:
+  1. Using a preset server (not custom IP)
+  2. Server has real players (not just bots)
+</Info>
+
+### Example response
+
+```
+Awesome CS:S Server
+
+Click below to join (CM ONLY)
+clientmod://connect/192.168.1.50:27015
+
+🗺️ Map: de_dust2
+🎮 Players: 18/32 (2 bots)
+🌍 Address: `192.168.1.50:27015`
+🔐 Visibility: Public
+⚙️ Server Type: Dedicated
+```
+
+### Server validation
+
+Yato validates that the server is actually a CS:S server by checking:
+- Server responds to queries
+- App ID is 240 (CS:S identifier)
+
+If validation fails:
+```
+⚠️ Unable to connect to the Server (`ip.address:port`)
+```
+
+### Preset servers
+
+Server administrators can configure preset CS:S servers for quick access. This feature requires server configuration in the bot's database.
+
+<Note>
+  Preset server configuration is managed through the `/editcssserver` command (admin only) and stores servers in the bot's database.
+</Note>
+
+## How it works
+
+### Minecraft query process
+
+1. User runs `/minecraft ip:server.address`
+2. Yato queries `api.mcsrvstat.us` with the provided IP
+3. API returns server status, player count, version, etc.
+4. Yato formats the data into an embed
+5. Fetches favicon from `mc-api.net`
+6. Fetches banner from `status.mclive.eu`
+7. Displays complete server information
+
+### CS:S query process
+
+1. User runs `/css` with server or IP
+2. Yato uses **gamedig** library to query the server directly
+3. Validates the server is CS:S (App ID 240)
+4. Fetches player list, map, server settings
+5. For preset servers: generates player list canvas image
+6. Displays formatted server information
+
+## Troubleshooting
+
+### Minecraft server not found
+
+**Issue**: "Unable to connect to the Server"
+
+**Possible causes:**
+- Server is offline
+- Incorrect IP address or port
+- Server is blocking queries
+- Firewall blocking the API
+
+**Solutions:**
+- Verify the server IP is correct
+- Check if the server is online in your Minecraft client
+- Try including the port number explicitly
+- Contact the server administrator
+
+### CS:S server query fails
+
+**Issue**: "Unable to connect to the Server"
+
+**Possible causes:**
+- Server is offline
+- Wrong port (not 27015)
+- Server is not CS:S (different game)
+- Query port is blocked
+
+**Solutions:**
+- Confirm the server is Counter-Strike: Source
+- Verify the correct port
+- Check server status in Steam server browser
+- Ensure query port is enabled on the server
+
+### Missing player list on CS:S
+
+The player list image only appears for preset servers with active players. If using a custom IP query, you'll get basic stats but no player list image.
+
+## Use cases
+
+### For players
+
+- Check if your favorite server is online before launching the game
+- See how many players are active
+- View current map rotation
+- Share server status with friends
+
+### For server administrators
+
+- Monitor server uptime
+- Track player counts
+- Verify server configuration
+- Promote your server in Discord
+
+### For communities
+
+- Create dedicated server-status channels
+- Set up automated status checking (with custom bots using Yato's framework)
+- Coordinate gaming sessions
+- Track server population trends
+
+## Supported games
+
+Currently supported:
+- **Minecraft** (Java Edition)
+- **Counter-Strike: Source**
+
+Future support may include additional games that work with the gamedig library, such as:
+- CS:GO
+- Team Fortress 2
+- Garry's Mod
+- Left 4 Dead 2
+- And many more Source engine games
+
+<Info>
+  Want support for additional games? Join the Yato support server and make a suggestion!
+</Info>
+
+## API credits
+
+Minecraft server queries use:
+- **mcsrvstat.us** - Server status API
+- **mc-api.net** - Favicon fetching
+- **status.mclive.eu** - Server banners
+
+CS:S queries use:
+- **gamedig** - Direct server protocol queries
+- **GameTracker** - Server tracking and statistics
+
+Thank you to these services for providing reliable game server data!

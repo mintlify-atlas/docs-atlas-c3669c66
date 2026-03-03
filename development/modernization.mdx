@@ -1,0 +1,558 @@
+---
+title: Modernization roadmap
+description: Modernizing Yato with current best practices, alternatives to gcommands, and security improvements
+---
+
+This guide outlines the modernization path for Yato, addressing outdated dependencies, framework choices, and architectural improvements for long-term maintainability.
+
+## Current state assessment
+
+Yato's current technology stack has several outdated components:
+
+<CardGroup cols={2}>
+  <Card title="Discord.js v12" icon="triangle-exclamation" color="#f59e0b">
+    Released 2021, no longer maintained. Missing modern Discord features.
+  </Card>
+  
+  <Card title="gcommands v5" icon="triangle-exclamation" color="#f59e0b">
+    Limited v14 compatibility. Small maintenance community.
+  </Card>
+  
+  <Card title="Mongoose v5" icon="circle-info" color="#3b82f6">
+    Works but outdated. Deprecated connection options.
+  </Card>
+  
+  <Card title="Node.js version" icon="circle-check" color="#10b981">
+    Likely outdated. Should target Node.js 18+ LTS.
+  </Card>
+</CardGroup>
+
+## Modernization priorities
+
+<Steps>
+  <Step title="Phase 1: Critical updates">
+    Update core dependencies for security and feature support.
+    
+    **Timeline**: 1-2 weeks
+    
+    - Upgrade to Discord.js v14
+    - Update Node.js to v18 LTS or v20 LTS
+    - Update Mongoose to v7+
+    - Replace or update gcommands
+  </Step>
+  
+  <Step title="Phase 2: Architecture improvements">
+    Modernize code structure and patterns.
+    
+    **Timeline**: 2-4 weeks
+    
+    - Implement proper event handler system
+    - Add TypeScript for type safety
+    - Restructure command loading
+    - Add comprehensive error handling
+  </Step>
+  
+  <Step title="Phase 3: Feature enhancements">
+    Add modern Discord features and improve UX.
+    
+    **Timeline**: 2-3 weeks
+    
+    - Native slash commands throughout
+    - Add modals for complex inputs
+    - Implement context menus
+    - Add thread support
+    - Improve button interactions
+  </Step>
+  
+  <Step title="Phase 4: DevOps and monitoring">
+    Improve deployment and observability.
+    
+    **Timeline**: 1-2 weeks
+    
+    - Add proper logging system
+    - Implement health checks
+    - Add metrics collection
+    - Set up CI/CD pipeline
+    - Container deployment
+  </Step>
+</Steps>
+
+## gcommands alternatives
+
+Several modern alternatives to gcommands offer better Discord.js v14 support:
+
+### Sapphire Framework
+
+<Info>
+  **Recommended**: Modern, well-maintained, TypeScript-first framework with excellent documentation.
+</Info>
+
+<Tabs>
+  <Tab title="Overview">
+    Sapphire is a plugin-based framework for Discord.js bots.
+    
+    **Pros:**
+    - Active development and community
+    - TypeScript support built-in
+    - Plugin system for modularity
+    - Comprehensive documentation
+    - Built for Discord.js v14
+    
+    **Cons:**
+    - Requires learning new patterns
+    - More opinionated than native Discord.js
+  </Tab>
+  
+  <Tab title="Installation">
+    ```bash
+    npm install @sapphire/framework @sapphire/plugin-logger
+    npm install -D @sapphire/cli
+    ```
+  </Tab>
+  
+  <Tab title="Example command">
+    ```ts src/commands/ping.ts
+    import { Command } from '@sapphire/framework';
+    import type { Message } from 'discord.js';
+    
+    export class PingCommand extends Command {
+      public constructor(context: Command.Context, options: Command.Options) {
+        super(context, {
+          name: 'ping',
+          description: 'Check bot latency'
+        });
+      }
+    
+      public async messageRun(message: Message) {
+        const msg = await message.reply('Pinging...');
+        const latency = msg.createdTimestamp - message.createdTimestamp;
+        return msg.edit(`Pong! Latency: ${latency}ms`);
+      }
+    
+      public override registerApplicationCommands(registry: Command.Registry) {
+        registry.registerChatInputCommand((builder) =>
+          builder
+            .setName(this.name)
+            .setDescription(this.description)
+        );
+      }
+    
+      public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+        const msg = await interaction.reply({ content: 'Pinging...', fetchReply: true });
+        const latency = msg.createdTimestamp - interaction.createdTimestamp;
+        return interaction.editReply(`Pong! Latency: ${latency}ms`);
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Native Discord.js
+
+Use Discord.js v14's built-in slash command support without a framework.
+
+<Tabs>
+  <Tab title="Overview">
+    **Pros:**
+    - No additional dependencies
+    - Full control over structure
+    - Matches official documentation
+    - Lightweight
+    
+    **Cons:**
+    - More boilerplate code
+    - Need to implement own command handler
+    - Less structure out of the box
+  </Tab>
+  
+  <Tab title="Command structure">
+    ```js src/commands/ping.js
+    const { SlashCommandBuilder } = require('discord.js');
+    
+    module.exports = {
+      data: new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Check bot latency'),
+      
+      async execute(interaction) {
+        const sent = await interaction.reply({ 
+          content: 'Pinging...', 
+          fetchReply: true 
+        });
+        
+        const latency = sent.createdTimestamp - interaction.createdTimestamp;
+        await interaction.editReply(`Pong! Latency: ${latency}ms`);
+      }
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Command loader">
+    ```js src/index.js
+    const fs = require('fs');
+    const path = require('path');
+    const { Collection } = require('discord.js');
+    
+    client.commands = new Collection();
+    const commandsPath = path.join(__dirname, 'commands');
+    const commandFiles = fs.readdirSync(commandsPath)
+      .filter(file => file.endsWith('.js'));
+    
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      const command = require(filePath);
+      client.commands.set(command.data.name, command);
+    }
+    
+    client.on('interactionCreate', async interaction => {
+      if (!interaction.isChatInputCommand()) return;
+    
+      const command = client.commands.get(interaction.commandName);
+      if (!command) return;
+    
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({ 
+          content: 'Error executing command', 
+          ephemeral: true 
+        });
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### discord.js-commando
+
+Command framework with a middle-ground approach.
+
+**Pros:**
+- Structured command system
+- Built-in argument parsing
+- Permission handling
+
+**Cons:**
+- Less active than Sapphire
+- Not TypeScript-first
+
+### Akairo Framework
+
+Another alternative with modular design.
+
+**Pros:**
+- Handler system for commands, listeners, inhibitors
+- TypeScript support
+- Active development
+
+**Cons:**
+- Steeper learning curve
+- Smaller community than Sapphire
+
+## TypeScript migration
+
+Adding TypeScript provides type safety and better developer experience.
+
+<Steps>
+  <Step title="Install TypeScript dependencies">
+    ```bash
+    npm install -D typescript @types/node ts-node
+    npm install -D @types/mongoose
+    ```
+  </Step>
+  
+  <Step title="Create tsconfig.json">
+    ```json tsconfig.json
+    {
+      "compilerOptions": {
+        "target": "ES2022",
+        "module": "commonjs",
+        "lib": ["ES2022"],
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "moduleResolution": "node"
+      },
+      "include": ["src/**/*"],
+      "exclude": ["node_modules"]
+    }
+    ```
+  </Step>
+  
+  <Step title="Convert files incrementally">
+    Start with configuration and utilities:
+    
+    ```typescript src/config/types.ts
+    export interface BotConfig {
+      token: string;
+      mongoUri: string;
+      clientId: string;
+      guildId?: string;
+    }
+    
+    export interface ColorConfig {
+      default: string;
+      red: string;
+      green: string;
+    }
+    ```
+    
+    ```typescript src/structures/utils.ts
+    import { Guild, TextChannel } from 'discord.js';
+    
+    export function getLogChannel(guild: Guild): TextChannel | undefined {
+      return guild.channels.cache.find(
+        ch => ch.isTextBased() && 
+        (ch.name === 'yato-logs' || ch.name === 'logs')
+      ) as TextChannel;
+    }
+    
+    export function cleanHTML(description: string): string {
+      if (!description) return '';
+      return description.replace(/<(.|
+)*?>/g, '');
+    }
+    ```
+  </Step>
+  
+  <Step title="Update package.json scripts">
+    ```json package.json
+    {
+      "scripts": {
+        "build": "tsc",
+        "dev": "ts-node src/index.ts",
+        "start": "node dist/index.js",
+        "watch": "tsc --watch"
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Security improvements
+
+### Environment variables
+
+Improve environment variable handling:
+
+```typescript src/config/env.ts
+import { z } from 'zod';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const envSchema = z.object({
+  TOKEN: z.string().min(1, 'Discord token is required'),
+  MONGO_URI: z.string().url('Valid MongoDB URI is required'),
+  CLIENT_ID: z.string().min(1, 'Client ID is required'),
+  NODE_ENV: z.enum(['development', 'production']).default('development')
+});
+
+export const env = envSchema.parse(process.env);
+```
+
+### Rate limiting
+
+Add rate limiting for API calls:
+
+```typescript src/structures/RateLimiter.ts
+export class RateLimiter {
+  private requests: Map<string, number[]> = new Map();
+  
+  constructor(
+    private readonly maxRequests: number,
+    private readonly timeWindow: number
+  ) {}
+  
+  canMakeRequest(userId: string): boolean {
+    const now = Date.now();
+    const userRequests = this.requests.get(userId) || [];
+    
+    // Remove old requests outside time window
+    const validRequests = userRequests.filter(
+      timestamp => now - timestamp < this.timeWindow
+    );
+    
+    if (validRequests.length >= this.maxRequests) {
+      return false;
+    }
+    
+    validRequests.push(now);
+    this.requests.set(userId, validRequests);
+    return true;
+  }
+}
+```
+
+### Input validation
+
+Validate user inputs properly:
+
+```typescript
+import { z } from 'zod';
+
+const prefixSchema = z.string()
+  .min(1, 'Prefix must be at least 1 character')
+  .max(5, 'Prefix cannot exceed 5 characters')
+  .regex(/^\S+$/, 'Prefix cannot contain spaces');
+
+try {
+  const validPrefix = prefixSchema.parse(userInput);
+  // Use validPrefix
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    await interaction.reply(error.errors[0].message);
+  }
+}
+```
+
+## Logging and monitoring
+
+Implement proper logging:
+
+```typescript src/structures/Logger.ts
+import winston from 'winston';
+
+export const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ 
+      filename: 'logs/error.log', 
+      level: 'error' 
+    }),
+    new winston.transports.File({ 
+      filename: 'logs/combined.log' 
+    })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+```
+
+Usage:
+
+```typescript
+import { logger } from './structures/Logger';
+
+logger.info('Bot started', { guilds: client.guilds.cache.size });
+logger.error('Command failed', { error, command: 'ping' });
+```
+
+## Containerization
+
+Create a Docker setup for easy deployment:
+
+```dockerfile Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source
+COPY . .
+
+# Build TypeScript (if using TS)
+RUN npm run build
+
+# Create non-root user
+RUN addgroup -g 1001 -S yato && \
+    adduser -S yato -u 1001
+USER yato
+
+CMD ["node", "dist/index.js"]
+```
+
+```yaml docker-compose.yml
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - mongodb
+    volumes:
+      - ./logs:/app/logs
+  
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+```
+
+## Testing strategy
+
+Add unit and integration tests:
+
+```bash
+npm install -D jest @types/jest ts-jest
+```
+
+```typescript tests/commands/ping.test.ts
+import { PingCommand } from '../../src/commands/ping';
+import { MockInteraction } from '../mocks/interaction';
+
+describe('Ping Command', () => {
+  it('should respond with latency', async () => {
+    const interaction = new MockInteraction();
+    const command = new PingCommand();
+    
+    await command.execute(interaction);
+    
+    expect(interaction.replied).toBe(true);
+    expect(interaction.lastReply).toMatch(/Pong/);
+  });
+});
+```
+
+## Migration checklist
+
+Track your modernization progress:
+
+- [ ] Update Node.js to v18+ LTS
+- [ ] Upgrade Discord.js to v14
+- [ ] Replace or update gcommands
+- [ ] Update Mongoose to v7+
+- [ ] Add TypeScript configuration
+- [ ] Convert core files to TypeScript
+- [ ] Implement proper event handlers
+- [ ] Add environment variable validation
+- [ ] Set up logging system
+- [ ] Add error tracking
+- [ ] Implement rate limiting
+- [ ] Create Docker configuration
+- [ ] Set up CI/CD pipeline
+- [ ] Add unit tests
+- [ ] Add integration tests
+- [ ] Update documentation
+
+<Tip>
+  Don't try to do everything at once. Modernize incrementally, testing thoroughly after each phase.
+</Tip>

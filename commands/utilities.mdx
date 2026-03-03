@@ -1,0 +1,266 @@
+---
+title: Utility commands
+description: Useful utility commands for server management and information
+---
+
+Utility commands provide helpful tools for server management, message handling, and general bot utilities.
+
+## Ping
+
+Check the bot's API latency and responsiveness.
+
+### Syntax
+
+```bash
+/ping
+```
+
+### Parameters
+
+This command takes no parameters.
+
+### Example
+
+```bash
+/ping
+```
+
+### Output
+
+Displays the bot's API latency in milliseconds with a fun, randomized message:
+- "Is this really my ping?"
+- "Is this okay? I can't look!"
+- "I hope it isn't bad!"
+
+<Note>
+  Lower latency (closer to 0ms) indicates better bot performance and responsiveness.
+</Note>
+
+---
+
+## Purge
+
+Bulk delete messages from a channel.
+
+### Syntax
+
+```bash
+/purge number:<amount>
+```
+
+### Parameters
+
+<ParamField path="number" type="Number" required>
+  The number of messages to delete (1-100)
+</ParamField>
+
+### Required permissions
+
+<CardGroup cols={2}>
+  <Card title="User permission" icon="user">
+    `MANAGE_MESSAGES`
+  </Card>
+  <Card title="Bot permission" icon="robot">
+    `MANAGE_MESSAGES`
+  </Card>
+</CardGroup>
+
+### Examples
+
+<CodeGroup>
+```bash Delete 10 messages
+/purge number:10
+```
+
+```bash Delete 50 messages
+/purge number:50
+```
+
+```bash Maximum deletion
+/purge number:100
+```
+</CodeGroup>
+
+### Limitations
+
+<Warning>
+  - Minimum: 1 message
+  - Maximum: 100 messages per command
+  - Discord cannot delete messages older than 14 days
+  - The command will fail silently for messages older than 14 days
+</Warning>
+
+### Error handling
+
+If the purge fails, you'll receive an error message with:
+- Possible reasons for failure
+- Link to the Support Server for assistance
+- Reminder about the 14-day limitation
+
+### Common issues
+
+<AccordionGroup>
+  <Accordion title="Messages won't delete">
+    Possible causes:
+    - Messages are older than 14 days (Discord limitation)
+    - Bot lacks `MANAGE_MESSAGES` permission
+    - Bot doesn't have access to the channel
+    - Channel permissions prevent message deletion
+  </Accordion>
+
+  <Accordion title="Permission errors">
+    Ensure:
+    - You have the `MANAGE_MESSAGES` permission
+    - Yato has the `MANAGE_MESSAGES` permission
+    - Both have access to the channel
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Say
+
+Make the bot repeat a message in the channel.
+
+### Syntax
+
+```bash
+/say message:<your message>
+```
+
+### Parameters
+
+<ParamField path="message" type="String" required>
+  The message you want the bot to send
+</ParamField>
+
+### Example
+
+```bash
+/say message:"Welcome to our server!"
+```
+
+### Output
+
+- The bot sends your message in the channel
+- You receive an ephemeral confirmation: "Echo Message: [your message]"
+
+<Note>
+  The confirmation message is only visible to you (ephemeral) while the actual message is visible to everyone in the channel.
+</Note>
+
+### Use cases
+
+- Creating announcements
+- Making formatted messages
+- Adding personality to server communications
+- Creating custom welcome messages
+
+---
+
+## Uptime
+
+Check how long the bot has been running.
+
+### Syntax
+
+```bash
+/uptime
+```
+
+### Parameters
+
+This command takes no parameters.
+
+### Example
+
+```bash
+/uptime
+```
+
+### Output
+
+Displays the bot's uptime in a human-readable format:
+- Days, hours, minutes, and seconds
+- Example: "2 days, 5 hours, 30 minutes, 15 seconds"
+
+<Info>
+  Uptime resets when the bot restarts for updates, maintenance, or unexpected issues.
+</Info>
+
+---
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Using purge responsibly">
+    - Always double-check the number before purging
+    - Consider the 14-day limit when cleaning old channels
+    - Use smaller numbers first to test
+    - Remember that purged messages cannot be recovered
+    - Inform moderators before large purges
+  </Accordion>
+
+  <Accordion title="Say command etiquette">
+    - Don't abuse the say command for spam
+    - Use it for legitimate server communications
+    - Consider using it for announcements and welcome messages
+    - Remember that the message appears to come from the bot
+  </Accordion>
+
+  <Accordion title="Monitoring bot health">
+    - Use `/ping` to check if the bot is responsive
+    - Use `/uptime` to see when the bot last restarted
+    - High ping (>300ms) may indicate performance issues
+    - Report consistent high latency to the support server
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### Purge command issues
+
+<Warning>
+  If purge fails:
+  1. Check that both you and Yato have `MANAGE_MESSAGES` permission
+  2. Verify messages aren't older than 14 days
+  3. Ensure Yato can see and access the channel
+  4. Try a smaller number first (e.g., 10 messages)
+  5. Join the [Support Server](https://discord.gg/mm7Ke8T) if issues persist
+</Warning>
+
+### Permission errors
+
+Most utility commands require specific permissions:
+- `/purge` requires `MANAGE_MESSAGES` for both user and bot
+- Ensure Yato's role is properly configured in Server Settings > Roles
+- Check channel-specific permission overrides
+
+### General troubleshooting
+
+- Use `/ping` to verify the bot is responsive
+- Check `/uptime` to see if recent restarts might explain issues
+- Verify you're using the correct command syntax
+- Join the [Yato Support Server](https://discord.gg/mm7Ke8T) for help
+
+---
+
+## Performance indicators
+
+<Tabs>
+  <Tab title="Ping ranges">
+    | Latency | Status | Description |
+    |---------|--------|-------------|
+    | 0-100ms | Excellent | Optimal performance |
+    | 100-200ms | Good | Normal performance |
+    | 200-400ms | Fair | Slight delays possible |
+    | 400ms+ | Poor | May experience lag |
+  </Tab>
+
+  <Tab title="Common uptime events">
+    - **Planned restarts**: Updates and maintenance
+    - **Unplanned restarts**: Crashes or hosting issues
+    - **Long uptimes**: Indicate stable bot operation
+    - **Frequent restarts**: May indicate problems (report to support)
+  </Tab>
+</Tabs>

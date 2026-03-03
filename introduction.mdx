@@ -1,0 +1,96 @@
+---
+title: Welcome to Yato Discord Bot
+description: A multifunctional Discord bot for moderation, social interactions, anime lookups, and community engagement
+---
+
+<Warning>
+  **Archived project**: This repository is now a public archive. The bot code is preserved for educational/reference purposes and may no longer function without updates (Discord API changes, library deprecations, dependency vulnerabilities, etc.). Use or deploy at your own discretion.
+</Warning>
+
+## What is Yato?
+
+Yato is a multifunctional Discord bot providing moderation, social, utility, media, and community engagement capabilities through modern slash commands. Built as a student learning project, Yato showcases structured command handling, external API integrations, database persistence, and interaction-based user experiences.
+
+Whether you're looking to moderate your server, engage with anime and manga content, or add fun social interactions, Yato provides a comprehensive suite of features.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Moderation tools" icon="gavel">
+    Kick, ban, mute, purge messages, and manage roles with ease
+  </Card>
+  
+  <Card title="Social & roleplay" icon="heart">
+    Reactions (hug, kiss, etc.), memes, and playful user interactions
+  </Card>
+  
+  <Card title="Anime & manga" icon="book">
+    Search and display info from AniList and MyAnimeList (via Jikan API)
+  </Card>
+  
+  <Card title="Custom graphics" icon="image">
+    Dynamic Canvas-based welcome cards and generated images
+  </Card>
+  
+  <Card title="Game server stats" icon="gamepad">
+    Query game server information for Minecraft, CS, and more via GameDig
+  </Card>
+  
+  <Card title="Event logging" icon="scroll">
+    Track member joins/leaves and moderation events
+  </Card>
+</CardGroup>
+
+## Tech stack
+
+Yato is built with the following technologies:
+
+| Layer | Library/Service | Notes |
+| --- | --- | --- |
+| Core bot | discord.js `^12.5.3` | Outdated; upgrade required for current API (v14+) |
+| Slash framework | gcommands `^5.2.4` | May no longer be maintained; consider native builders |
+| Database | Mongoose + MongoDB | Optional (only if persistence features used) |
+| External APIs | AniList, Jikan | Anime & manga lookups |
+| Canvas/Images | `canvas` | For welcome images or generated assets |
+| Utilities | `moment`, `ms`, `diff` | Formatting & developer helpers |
+| Game stats | `gamedig` | Query game server info |
+| Environment | `dotenv` | Load `.env` config |
+
+## Getting started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get your bot running in minutes with our quick setup guide
+  </Card>
+  
+  <Card title="Installation" icon="download" href="/installation">
+    Detailed installation steps and system requirements
+  </Card>
+  
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Learn how to configure environment variables and bot settings
+  </Card>
+  
+  <Card title="Commands" icon="terminal" href="/commands/overview">
+    Explore all available commands and their usage
+  </Card>
+</CardGroup>
+
+## Command categories
+
+Yato organizes its features into the following categories:
+
+- **Games**: Interactive game commands
+- **Images**: Image generation and manipulation
+- **Information**: Server info, user info, bot stats
+- **Memes**: Fun meme generation
+- **Misc**: Miscellaneous utilities
+- **Moderation**: Server management and moderation
+- **Utilities**: Helpful utility commands
+- **Weeb**: Anime and manga related commands
+
+## Support
+
+<Info>
+  Need help? Join the [Yato Support Server](https://discord.gg/mm7Ke8T) for questions or issues.
+</Info>

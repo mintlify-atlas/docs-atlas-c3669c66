@@ -1,0 +1,376 @@
+---
+title: Upgrading Discord.js
+description: Guide to migrating Yato from Discord.js v12 to v14+
+---
+
+Yato currently uses Discord.js v12.5.3, which was released in 2021 and is no longer maintained. This guide covers the migration path to Discord.js v14, the current stable version.
+
+<Warning>
+  Discord.js v12 does not support many modern Discord features like buttons, select menus, modals, threads, and slash commands natively. Upgrading is essential for continued functionality.
+</Warning>
+
+## Why upgrade?
+
+<CardGroup cols={2}>
+  <Card title="Security" icon="shield-check">
+    v12 receives no security updates or bug fixes.
+  </Card>
+  
+  <Card title="New features" icon="sparkles">
+    Native slash commands, buttons, modals, and threads.
+  </Card>
+  
+  <Card title="Performance" icon="gauge-high">
+    Better memory usage and faster event handling.
+  </Card>
+  
+  <Card title="Support" icon="headset">
+    Active community support and documentation.
+  </Card>
+</CardGroup>
+
+## Breaking changes overview
+
+The migration from v12 to v14 involves several major breaking changes:
+
+1. **Intents are required** - Must specify which events to receive
+2. **Managers replaced Collections** - Many `.cache` properties are now managers
+3. **MessageEmbed renamed** - Now called `EmbedBuilder`
+4. **Permissions system changed** - New `PermissionFlagsBits` and `PermissionsBitField`
+5. **Message content is privileged** - Requires intent for non-slash commands
+6. **Many methods return promises** - More async/await required
+
+## Step-by-step migration
+
+<Steps>
+  <Step title="Update dependencies">
+    Update `package.json` to use Discord.js v14:
+    
+    ```json package.json
+    {
+      "dependencies": {
+        "discord.js": "^14.14.1",
+        "@discordjs/rest": "^2.2.0",
+        "@discordjs/builders": "^1.7.0"
+      }
+    }
+    ```
+    
+    Install updates:
+    
+    ```bash
+    npm install
+    ```
+  </Step>
+  
+  <Step title="Add intents to client">
+    Update client initialization in `src/index.js:7`:
+    
+    ```js src/index.js
+    const Discord = require('discord.js');
+    const { GatewayIntentBits } = Discord;
+    
+    // Old (v12)
+    const client = new Discord.Client({ 
+      allowedMentions: { parse: ['users', 'roles'] } 
+    });
+    
+    // New (v14)
+    const client = new Discord.Client({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.MessageContent, // Required for prefix commands
+        GatewayIntentBits.GuildPresences
+      ],
+      allowedMentions: { parse: ['users', 'roles'] }
+    });
+    ```
+    
+    <Warning>
+      `MessageContent` is a privileged intent. Enable it in the Discord Developer Portal under Bot settings.
+    </Warning>
+  </Step>
+  
+  <Step title="Update MessageEmbed to EmbedBuilder">
+    Replace all `MessageEmbed` imports and usage:
+    
+    ```js
+    // Old (v12)
+    const { MessageEmbed } = require('discord.js');
+    const embed = new MessageEmbed()
+      .setTitle('Title')
+      .setColor(colors.default);
+    
+    // New (v14)
+    const { EmbedBuilder } = require('discord.js');
+    const embed = new EmbedBuilder()
+      .setTitle('Title')
+      .setColor(colors.default);
+    ```
+    
+    This affects many files:
+    - `src/commands/utilities/ping.js:1`
+    - `src/commands/moderation/ban.js:1`
+    - `src/commands/information/help.js:1`
+    - And many more command files
+  </Step>
+  
+  <Step title="Update presence/status">
+    Update status setting in `src/index.js:41`:
+    
+    ```js
+    // Old (v12)
+    client.user.setPresence({ 
+      activity: { name: status, type: 'LISTENING' }, 
+      status: 'idle' 
+    });
+    
+    // New (v14)
+    const { ActivityType } = require('discord.js');
+    client.user.setPresence({
+      activities: [{ name: status, type: ActivityType.Listening }],
+      status: 'idle'
+    });
+    ```
+  </Step>
+  
+  <Step title="Update permissions">
+    Replace permission strings with `PermissionFlagsBits`:
+    
+    ```js
+    // Old (v12) - in src/commands/moderation/ban.js:10
+    module.exports = {
+      userRequiredPermissions: 'BAN_MEMBERS',
+      clientRequiredPermissions: 'BAN_MEMBERS'
+    };
+    
+    // New (v14)
+    const { PermissionFlagsBits } = require('discord.js');
+    module.exports = {
+      userRequiredPermissions: PermissionFlagsBits.BanMembers,
+      clientRequiredPermissions: PermissionFlagsBits.BanMembers
+    };
+    ```
+    
+    Common permission mappings:
+    - `BAN_MEMBERS` → `PermissionFlagsBits.BanMembers`
+    - `KICK_MEMBERS` → `PermissionFlagsBits.KickMembers`
+    - `MANAGE_GUILD` → `PermissionFlagsBits.ManageGuild`
+    - `MANAGE_MESSAGES` → `PermissionFlagsBits.ManageMessages`
+    - `CREATE_INSTANT_INVITE` → `PermissionFlagsBits.CreateInstantInvite`
+  </Step>
+  
+  <Step title="Update button and component styles">
+    Update button styles in commands like `src/commands/information/help.js:23`:
+    
+    ```js
+    const { MessageButton, MessageActionRow } = require('gcommands');
+    
+    // Old (v12)
+    const button = new MessageButton()
+      .setStyle('url')
+      .setLabel('Website')
+      .setURL('https://yatobot.netlify.app');
+    
+    // New (v14) - if using native Discord.js buttons
+    const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+    const button = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Website')
+      .setURL('https://yatobot.netlify.app');
+    
+    const row = new ActionRowBuilder()
+      .addComponents(button);
+    ```
+    
+    <Info>
+      If continuing to use gcommands, check their documentation for v14 compatibility.
+    </Info>
+  </Step>
+</Steps>
+
+## Command-specific changes
+
+### Ban command updates
+
+In `src/commands/moderation/ban.js:28`:
+
+```js
+// Old (v12)
+if (!banMember.kickable) {
+  // Error handling
+}
+
+await banMember.ban({ days: 0, reason: reason });
+
+// New (v14)
+if (!banMember.bannable) { // Changed from kickable
+  // Error handling
+}
+
+await banMember.ban({ 
+  deleteMessageSeconds: 0, // Changed from days
+  reason: reason 
+});
+```
+
+### Channel type checks
+
+In `src/commands/misc/activities.js:71`:
+
+```js
+// Old (v12)
+if (channel.type !== 'voice') {
+  // Error
+}
+
+// New (v14)
+const { ChannelType } = require('discord.js');
+if (channel.type !== ChannelType.GuildVoice) {
+  // Error
+}
+```
+
+### Avatar URLs
+
+Update avatar URL methods throughout:
+
+```js
+// Old (v12)
+member.user.displayAvatarURL({ dynamic: true, size: 1024 })
+
+// New (v14)
+member.user.displayAvatarURL({ extension: 'png', size: 1024 })
+// Or for animated avatars:
+member.user.displayAvatarURL({ dynamic: true, size: 1024 }) // Still works
+```
+
+## gcommands compatibility
+
+<Warning>
+  gcommands v5.2.4 may not be fully compatible with Discord.js v14. Check for updates or consider alternatives.
+</Warning>
+
+Options for handling commands in v14:
+
+<Tabs>
+  <Tab title="Native slash commands">
+    Discord.js v14 has built-in slash command support:
+    
+    ```js
+    const { SlashCommandBuilder } = require('discord.js');
+    
+    module.exports = {
+      data: new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Check bot ping'),
+      
+      async execute(interaction) {
+        await interaction.reply(`Pong! ${interaction.client.ws.ping}ms`);
+      }
+    };
+    ```
+  </Tab>
+  
+  <Tab title="discord.js-commando">
+    A command framework for Discord.js:
+    
+    ```bash
+    npm install discord.js-commando
+    ```
+    
+    More structured than native but less opinionated than gcommands.
+  </Tab>
+  
+  <Tab title="Sapphire Framework">
+    Modern, TypeScript-first framework:
+    
+    ```bash
+    npm install @sapphire/framework
+    ```
+    
+    Recommended for new projects with Discord.js v14.
+  </Tab>
+</Tabs>
+
+## MongoDB updates
+
+Update Mongoose connection in `src/index.js:11`:
+
+```js
+// Old (v12 era)
+await mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+// New (modern Mongoose)
+await mongoose.connect(process.env.MONGO_URI);
+// These options are now defaults
+```
+
+## Testing checklist
+
+After migration, test these features:
+
+<AccordionGroup>
+  <Accordion title="Bot startup" icon="power-off">
+    - [ ] Bot logs in successfully
+    - [ ] MongoDB connects
+    - [ ] Commands load without errors
+    - [ ] Status updates correctly
+  </Accordion>
+  
+  <Accordion title="Commands" icon="terminal">
+    - [ ] Slash commands register and work
+    - [ ] Mention prefix commands work (if keeping them)
+    - [ ] Arguments are parsed correctly
+    - [ ] Permissions are checked
+  </Accordion>
+  
+  <Accordion title="Embeds and components" icon="window-maximize">
+    - [ ] Embeds display correctly
+    - [ ] Buttons are clickable
+    - [ ] Button collectors work
+    - [ ] Action rows function properly
+  </Accordion>
+  
+  <Accordion title="Moderation" icon="gavel">
+    - [ ] Ban command works
+    - [ ] Kick command works
+    - [ ] Permission checks function
+  </Accordion>
+  
+  <Accordion title="External APIs" icon="plug">
+    - [ ] AniList integration works
+    - [ ] Reddit fetcher works
+    - [ ] Image APIs respond
+    - [ ] Game server queries work
+  </Accordion>
+</AccordionGroup>
+
+## Migration resources
+
+<CardGroup cols={2}>
+  <Card title="Discord.js Guide" icon="book" href="https://discordjs.guide/additional-info/changes-in-v14.html">
+    Official migration guide from v13 to v14
+  </Card>
+  
+  <Card title="Discord.js Docs" icon="file-code" href="https://discord.js.org/docs/packages/discord.js/14.14.1">
+    Complete v14 API documentation
+  </Card>
+  
+  <Card title="Gateway Intents" icon="network-wired" href="https://discord.com/developers/docs/topics/gateway#gateway-intents">
+    Understanding Discord intents
+  </Card>
+  
+  <Card title="Slash Commands" icon="slash" href="https://discordjs.guide/interactions/slash-commands.html">
+    Building slash commands in v14
+  </Card>
+</CardGroup>
+
+<Tip>
+  Consider migrating to TypeScript during the v14 upgrade for better type safety and developer experience.
+</Tip>

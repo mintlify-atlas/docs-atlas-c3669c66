@@ -1,0 +1,348 @@
+---
+title: MongoDB setup
+description: Set up and configure MongoDB for Yato Discord Bot data persistence
+---
+
+Yato uses MongoDB with Mongoose ODM for data persistence, storing user profiles, guild configurations, and other bot data.
+
+## Why MongoDB?
+
+Yato requires a database to store:
+- **User data**: AniList profile links and user preferences
+- **Guild configurations**: Server-specific settings and preferences
+- **Token data**: Random tokens for various features
+- **Game server data**: Counter-Strike server configurations
+
+MongoDB provides flexible schema design and scales well with Discord bot workloads.
+
+## Setup options
+
+You can use MongoDB in several ways:
+
+<Steps>
+  <Step title="Choose your setup method">
+    Select the MongoDB setup that best fits your needs:
+    
+    - **MongoDB Atlas** (recommended for production): Free cloud-hosted MongoDB
+    - **Local MongoDB**: Run MongoDB on your development machine
+    - **Docker**: Containerized MongoDB for easy local development
+  </Step>
+  
+  <Step title="Configure connection string">
+    Add your MongoDB connection URI to the `.env` file as `MONGO_URI`.
+  </Step>
+  
+  <Step title="Start the bot">
+    The bot will automatically connect to MongoDB on startup and create the necessary collections.
+  </Step>
+</Steps>
+
+## MongoDB Atlas (Cloud) - Recommended
+
+MongoDB Atlas offers a free tier perfect for Discord bots.
+
+<Steps>
+  <Step title="Create MongoDB Atlas account">
+    1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+    2. Sign up for a free account
+    3. Create a new project (e.g., "Yato Bot")
+  </Step>
+  
+  <Step title="Create a cluster">
+    1. Click "Build a Database"
+    2. Select the **FREE** tier (M0 Sandbox)
+    3. Choose a cloud provider and region (closest to your bot's server)
+    4. Name your cluster (e.g., "yato-cluster")
+    5. Click "Create Cluster" (takes 3-5 minutes)
+  </Step>
+  
+  <Step title="Create database user">
+    1. Go to "Database Access" in the left sidebar
+    2. Click "Add New Database User"
+    3. Choose "Password" authentication
+    4. Create a username and strong password (save these!)
+    5. Set privileges to "Read and write to any database"
+    6. Click "Add User"
+    
+    <Warning>
+      Save your username and password securely. You'll need them for the connection string.
+    </Warning>
+  </Step>
+  
+  <Step title="Configure network access">
+    1. Go to "Network Access" in the left sidebar
+    2. Click "Add IP Address"
+    3. For development: Click "Allow Access from Anywhere" (0.0.0.0/0)
+    4. For production: Add your server's specific IP address
+    5. Click "Confirm"
+    
+    <Note>
+      For enhanced security in production, only whitelist your server's IP address instead of allowing access from anywhere.
+    </Note>
+  </Step>
+  
+  <Step title="Get connection string">
+    1. Go to "Database" in the left sidebar
+    2. Click "Connect" on your cluster
+    3. Select "Connect your application"
+    4. Copy the connection string
+    5. Replace `<password>` with your database user's password
+    6. Replace `<dbname>` with your database name (e.g., `yato`)
+    
+    Example:
+    ```
+    mongodb+srv://yatobot:your_password@cluster.mongodb.net/yato?retryWrites=true&w=majority
+    ```
+  </Step>
+  
+  <Step title="Add to .env file">
+    Add the connection string to your `.env` file:
+    
+    ```bash
+    MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/yato?retryWrites=true&w=majority
+    ```
+  </Step>
+</Steps>
+
+## Local MongoDB installation
+
+For local development, you can install MongoDB directly on your machine.
+
+### macOS
+
+```bash
+# Install using Homebrew
+brew tap mongodb/brew
+brew install mongodb-community
+
+# Start MongoDB
+brew services start mongodb-community
+```
+
+### Windows
+
+1. Download MongoDB Community Server from [mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
+2. Run the installer (use default settings)
+3. MongoDB will run as a Windows service automatically
+
+### Linux (Ubuntu/Debian)
+
+```bash
+# Import MongoDB GPG key
+wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+
+# Add MongoDB repository
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -sc)/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+
+# Install MongoDB
+sudo apt-get update
+sudo apt-get install -y mongodb-org
+
+# Start MongoDB
+sudo systemctl start mongod
+sudo systemctl enable mongod
+```
+
+### Connection string for local MongoDB
+
+Add this to your `.env` file:
+
+```bash
+MONGO_URI=mongodb://localhost:27017/yato
+```
+
+## Docker setup
+
+Use Docker Compose for easy local MongoDB setup.
+
+<Steps>
+  <Step title="Create docker-compose.yml">
+    Create a `docker-compose.yml` file in your project root:
+    
+    ```yaml docker-compose.yml
+    version: '3.8'
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        container_name: yato-mongodb
+        restart: unless-stopped
+        ports:
+          - "27017:27017"
+        environment:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin123
+          MONGO_INITDB_DATABASE: yato
+        volumes:
+          - mongodb_data:/data/db
+    
+    volumes:
+      mongodb_data:
+    ```
+  </Step>
+  
+  <Step title="Start MongoDB container">
+    ```bash
+    docker-compose up -d
+    ```
+  </Step>
+  
+  <Step title="Configure .env file">
+    ```bash
+    MONGO_URI=mongodb://admin:admin123@localhost:27017/yato?authSource=admin
+    ```
+  </Step>
+</Steps>
+
+## Database schema
+
+Yato automatically creates collections based on Mongoose models defined in `src/models/`.
+
+### User model
+
+Stores user data and AniList profile associations (`src/models/user.js`):
+
+```javascript
+{
+  name: String,        // Discord username
+  id: String,          // Discord user ID
+  aniProfile: Mixed    // AniList profile data
+}
+```
+
+### CSS model
+
+Stores Counter-Strike server configurations (`src/models/css.js`).
+
+<Info>
+  Collections are created automatically when data is first written. You don't need to manually create them.
+</Info>
+
+## Connection handling
+
+The bot connects to MongoDB during startup in `src/index.js:11-13`:
+
+```javascript
+await mongoose.connect(process.env.MONGO_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
+  .then(() => console.log('✔ Connected to MongoDB'))
+  .catch(err => console.log(`✖ Failed to connect to MongoDB\n${err}`));
+```
+
+### Connection options explained
+
+- `useNewUrlParser: true`: Uses the new MongoDB connection string parser
+- `useUnifiedTopology: true`: Uses the new Server Discover and Monitoring engine
+
+<Note>
+  These options were required for Mongoose 5.x (used by Yato). Newer versions of Mongoose (6.x+) don't require these options.
+</Note>
+
+## Verifying the connection
+
+When the bot starts successfully, you should see:
+
+```bash
+➤ Logged in as Yato#1234 (123456789012345678)
+✔ Connected to MongoDB
+```
+
+If the connection fails:
+
+```bash
+➤ Logged in as Yato#1234 (123456789012345678)
+✖ Failed to connect to MongoDB
+MongoServerError: Authentication failed
+```
+
+## Database management tools
+
+Use these tools to view and manage your MongoDB data:
+
+### MongoDB Compass (Recommended)
+
+Official GUI for MongoDB:
+
+1. Download from [mongodb.com/products/compass](https://www.mongodb.com/products/compass)
+2. Connect using your `MONGO_URI` connection string
+3. Browse collections, documents, and run queries
+
+### MongoDB Atlas Dashboard
+
+For Atlas users:
+
+1. Log into [MongoDB Atlas](https://cloud.mongodb.com)
+2. Click "Browse Collections" on your cluster
+3. View and edit data directly in the browser
+
+### VS Code extension
+
+Install the "MongoDB for VS Code" extension:
+
+1. Search for "MongoDB" in VS Code extensions
+2. Install "MongoDB for VS Code" by MongoDB
+3. Connect using your connection string
+4. Browse and query data without leaving VS Code
+
+## Troubleshooting
+
+### Authentication failed
+
+**Error**: `MongoServerError: Authentication failed`
+
+**Solutions**:
+- Verify username and password in connection string
+- Check that database user exists in Atlas
+- Ensure password doesn't contain special characters (URL encode if needed)
+- For Atlas, verify IP whitelist includes your IP
+
+### Connection timeout
+
+**Error**: `MongoServerSelectionError: connection timeout`
+
+**Solutions**:
+- Check internet connection
+- Verify MongoDB service is running (local installations)
+- For Atlas, check network access whitelist
+- Ensure firewall allows outbound connections on port 27017
+
+### Cannot connect to localhost
+
+**Error**: `MongoNetworkError: failed to connect to server [localhost:27017]`
+
+**Solutions**:
+- Ensure MongoDB service is running locally
+- Check MongoDB is listening on port 27017
+- Try `127.0.0.1` instead of `localhost`
+- For Docker, ensure container is running: `docker ps`
+
+### Database not found
+
+<Info>
+  MongoDB creates databases automatically when you first write data. If the database doesn't exist yet, it will be created when the bot first saves data.
+</Info>
+
+## Production best practices
+
+<Warning>
+  Follow these best practices for production deployments:
+</Warning>
+
+- **Use MongoDB Atlas**: More reliable than self-hosted solutions
+- **Enable authentication**: Always require username/password
+- **Restrict network access**: Whitelist only your server's IP
+- **Regular backups**: Enable automated backups in Atlas or set up backup scripts
+- **Monitor performance**: Use Atlas monitoring or set up alerts
+- **Use connection pooling**: Mongoose handles this automatically
+- **Handle connection errors**: Implement reconnection logic for production
+- **Secure connection strings**: Store `MONGO_URI` in environment variables, never in code
+
+## Next steps
+
+Now that MongoDB is configured:
+
+1. Set up your [environment variables](/configuration/environment)
+2. Configure your [Discord bot application](/configuration/discord-setup)
+3. Start the bot and verify the connection
