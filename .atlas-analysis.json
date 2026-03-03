@@ -1,0 +1,116 @@
+{
+  "projectType": "saas",
+  "projectName": "Yato Discord Bot",
+  "projectDescription": "Multifunctional Discord bot providing moderation, social interactions, anime/manga lookups, and community engagement features.",
+  "theme": "almond",
+  "primaryColor": "#7289DA",
+  "lightColor": "#99AAF5",
+  "darkColor": "#5B6EAE",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart", "installation"]
+          },
+          {
+            "group": "Configuration",
+            "pages": ["configuration/environment", "configuration/mongodb", "configuration/discord-setup"]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/moderation",
+              "features/social-roleplay",
+              "features/anime-manga",
+              "features/game-servers",
+              "features/utilities"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": ["deployment/hosting", "deployment/heroku", "deployment/docker"]
+          }
+        ]
+      },
+      {
+        "tab": "Commands",
+        "groups": [
+          {
+            "group": "Command Reference",
+            "pages": [
+              "commands/overview",
+              "commands/moderation",
+              "commands/social",
+              "commands/anime",
+              "commands/games",
+              "commands/utilities",
+              "commands/misc"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Extending Yato",
+            "pages": [
+              "development/architecture",
+              "development/adding-commands",
+              "development/custom-events",
+              "development/database-models"
+            ]
+          },
+          {
+            "group": "Migration",
+            "pages": [
+              "development/upgrading-discordjs",
+              "development/modernization"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Moderation commands (ban, kick, purge)",
+    "Social roleplay interactions (hug, kiss, pat)",
+    "Anime & manga lookups via AniList and Jikan",
+    "Game server status queries (Minecraft, CS:GO)",
+    "Slash command support via gcommands",
+    "MongoDB persistence for guild config",
+    "Canvas-based welcome cards and graphics",
+    "Activity status rotation"
+  ],
+  "publicApiSurface": [
+    "/ban - Ban a user from the server",
+    "/kick - Kick a user from the server",
+    "/purge - Bulk delete messages",
+    "/hug - Hug another user",
+    "/kiss - Kiss another user",
+    "/pat - Pat another user",
+    "/bite - Bite another user",
+    "/slap - Slap another user",
+    "/anime - Search for anime on AniList",
+    "/manga - Search for manga on AniList",
+    "/mal - MyAnimeList anime search",
+    "/al - AniList profile lookup",
+    "/minecraft - Check Minecraft server status",
+    "/css - Check Counter-Strike server status",
+    "/ping - Check bot latency",
+    "/uptime - Display bot uptime",
+    "/help - List all commands",
+    "/botinfo - Display bot information",
+    "/serverinfo - Display server information",
+    "/userinfo - Display user information",
+    "/avatar - Get user avatar",
+    "/say - Make the bot say something",
+    "/meme - Get random meme",
+    "/animeme - Get random anime meme",
+    "/activities - Start Discord activities",
+    "/djs - Search Discord.js documentation"
+  ]
+}
