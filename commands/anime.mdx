@@ -54,6 +54,106 @@ Search for detailed anime information from AniList.
 
 ---
 
+## Manga search
+
+Search for detailed manga information from AniList.
+
+### Syntax
+
+```bash
+/manga search:<manga title>
+```
+
+### Parameters
+
+<ParamField path="search" type="String" required>
+  The manga title to search for
+</ParamField>
+
+### Cooldown
+
+**20 seconds** - This command has a longer cooldown due to API rate limits.
+
+### Example
+
+```bash
+/manga search:One Piece
+/manga search:Berserk
+/manga search:Demon Slayer
+```
+
+### Features
+
+- Interactive pagination with "Next" and "Back" buttons
+- Displays multiple results if available
+- Shows detailed manga information including:
+  - Title and synopsis
+  - Chapter and volume count
+  - Rating and genres
+  - Publication status
+  - Cover image
+
+<Note>
+  The command will show "loading..." while fetching results. Use the Next/Back buttons to browse through multiple results for 60 seconds.
+</Note>
+
+---
+
+## Link your account
+
+Link your AniList or MyAnimeList account to use profile commands without specifying usernames.
+
+### Syntax
+
+```bash
+/set profile:<AniList|MyAnimeList> username:<your_username>
+```
+
+### Parameters
+
+<ParamField path="profile" type="Choice" required>
+  Select which platform to link:
+  - **AniList** - Link your AniList account
+  - **MyAnimeList** - Link your MyAnimeList account
+</ParamField>
+
+<ParamField path="username" type="String" required>
+  Your username on the selected platform
+</ParamField>
+
+### Cooldown
+
+**10 seconds**
+
+### Examples
+
+<CodeGroup>
+```bash Link AniList
+/set profile:AniList username:YourAniListUsername
+```
+
+```bash Link MyAnimeList
+/set profile:MyAnimeList username:YourMALUsername
+```
+</CodeGroup>
+
+### How it works
+
+1. Run the `/set` command with your platform and username
+2. Yato saves your account link to its database
+3. Now you can use `/al` or `/mal` without parameters to view your own stats
+4. Other users can look up your stats using `/al user:@you` or `/mal user:@you`
+
+<Info>
+  You can link both AniList and MyAnimeList accounts separately. Run the command once for each platform.
+</Info>
+
+<Warning>
+  The command response is ephemeral (only visible to you) to protect your privacy.
+</Warning>
+
+---
+
 ## AniList profile
 
 Retrieve AniList statistics for yourself or another user.
@@ -298,7 +398,7 @@ Randomly fetches from:
 <AccordionGroup>
   <Accordion title="Linking your accounts">
     To use `/al` and `/mal` commands without specifying usernames:
-    1. Use the `set` command to link your AniList/MyAnimeList accounts
+    1. Use the `/set` command to link your AniList/MyAnimeList accounts (see "Link your account" section above)
     2. Once linked, simply use `/al` or `/mal` to view your stats
     3. Other users can then look up your stats using `/al user:@you`
   </Accordion>
@@ -311,7 +411,7 @@ Randomly fetches from:
   </Accordion>
 
   <Accordion title="Search tips">
-    For the `/anime` command:
+    For the `/anime` and `/manga` commands:
     - Use the official English or Japanese title for best results
     - If you don't find what you're looking for, try alternative titles
     - Use the pagination buttons within 60 seconds before they expire
